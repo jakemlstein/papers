@@ -54,13 +54,14 @@
   .step .txt{opacity:.22;transition:opacity .4s;max-width:30em}
   .step.is-active .txt{opacity:1}
   .step:last-child{min-height:100vh}
-  .txt::before{content:counter(step,decimal-leading-zero) " / 20";display:block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--uber);margin-bottom:10px}
   .txt h2{font-weight:800;font-style:italic;text-transform:uppercase;font-size:28px;line-height:1.08;margin:0 0 .5em;letter-spacing:-.005em}
   .txt p{margin:.55em 0}
   .big{font-weight:800;font-size:1.3em;font-family:var(--mono);letter-spacing:-.02em}
   .tag{display:inline-block;padding:0 .4em;color:#fff;font-weight:700;font-size:.88em;font-family:var(--mono)}
   .t-driver{background:var(--driver);color:var(--oxblue)} .t-uber{background:var(--uber)} .t-standby{background:var(--standby);color:var(--oxblue)} .t-enroute{background:var(--enroute);color:var(--oxblue)}
   .note{font-size:12px;color:var(--faint);font-family:var(--mono)}
+  .src{margin-top:20px!important;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .src::before{content:'PAPER  ';color:var(--driver)}
   blockquote{margin:22px 0 0;padding:0 0 0 16px;border-left:2px solid var(--wash);color:var(--dim);font-style:italic;font-size:15px;line-height:1.55}
   blockquote cite{display:block;margin-top:8px;font-style:normal;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
   blockquote .who{color:var(--standby)}
@@ -150,39 +151,39 @@
       <h2>A driver's day has three parts</h2>
       <p>When a driver logs in to the app, their time splits three ways:</p>
       <p><span class="tag t-driver">On a trip</span> with a passenger, <span class="tag t-enroute">En route</span> to pick someone up, and <span class="tag t-standby">Waiting</span> for the app to offer a job.</p>
-      <blockquote>“drivers are expected to anticipate when and where the algorithm will allocate them jobs”<cite>Abstract · p. 1484</cite></blockquote>
+      <p class="src">§1 Introduction</p>
     </div></div>
 
     <div class="step" data-scene="day" data-mode="uber"><div class="txt">
       <h2>Uber only counts some of it</h2>
       <p>Uber pays for time on trips and driving to pickups. The waiting time is unpaid, and invisible in Uber's version of "hourly pay".</p>
-      <blockquote>“that’s for them what’s considered working time period”<cite><span class="who">Driver, workshop</span> · §3.3 Participatory Worker Data Science · p. 1487</cite></blockquote>
+      <p class="src">§4.1 Pay</p>
     </div></div>
 
     <div class="step" data-scene="day" data-mode="court"><div class="txt">
       <h2>The courts count all of it</h2>
       <p>In 2021 the UK Supreme Court ruled that Uber drivers are workers, not independent contractors. The Employment Tribunal said working time includes every minute a driver is logged in and ready to work.</p>
-      <blockquote>“any time spent on the app ready and available to work, whether that is waiting for a request (‘standby’), en route to pick up, or on trip”<cite>§4.1 Pay · p. 1489</cite></blockquote>
+      <p class="src">§4.1 Pay</p>
     </div></div>
 
     <div class="step" data-scene="pay"><div class="txt">
       <h2>Same work. Two very different wages.</h2>
       <p>Averaged over 2020 to 2024, drivers earned <span class="big">£29.46</span> an hour by Uber's definition.</p>
       <p>Count waiting time, as the Tribunal does, and it falls to <span class="big">£15.98</span>, before costs like insurance, repairs and fuel.</p>
-      <blockquote>“On Uber’s definition, the average is £29.46 across 2020-2024; whereas on the Employment Tribunal’s definition, pay per hour was only £15.98.”<cite>§4.1 Pay · p. 1489</cite></blockquote>
+      <p class="src">§4.1 Pay</p>
     </div></div>
 
     <div class="step" data-scene="data"><div class="txt">
       <h2>How we know: drivers took back their data</h2>
       <p>Under GDPR, anyone can ask a company for a copy of the data it holds about them. Working with the non-profit Worker Info Exchange, drivers did exactly that and pooled it for this audit.</p>
       <p>Everything was analysed on a secure laptop at WIE's office so no driver could be identified.</p>
-      <blockquote>“258 drivers volunteered their data covering over 1.5 million trips between 2016-2024.”<cite>§1 Introduction · p. 1485</cite></blockquote>
+      <p class="src">§3.2 Data Source</p>
     </div></div>
 
     <div class="step" data-scene="dsar" data-mode="files"><div class="txt">
       <h2>A data request returns a mess, not a dataset</h2>
       <p>Each driver's response arrived as dozens of loosely documented files: device logs, ratings, saved locations, messages. Only a handful say anything about pay.</p>
-      <blockquote>“When WIE receives data from gig work platforms, it takes the shape of many disorganized files that are not readily understandable without substantial interpretation, preprocessing, and cleaning.”<cite>§3.2 Data Source · p. 1487</cite></blockquote>
+      <p class="src">§3.2 Data Source</p>
     </div></div>
 
     <div class="step" data-scene="dsar" data-mode="pipeline"><div class="txt">
@@ -197,71 +198,71 @@
         <li><b>CELL</b> Metrics don't line up with their definitions</li>
         <li><b>CELL</b> Personal details removed, encrypted ID added</li>
       </ul>
-      <blockquote>“A unique trip identifier is not provided in the data, but by joining multiple tables and inferring which payment related to which trip based on timestamps, we were able calculate the take rate”<cite>§4.3 Commission / Take Rates / Surplus · p. 1489</cite></blockquote>
+      <p class="src">§3.2 Data Source</p>
     </div></div>
 
     <div class="step" data-scene="split" data-mode="before"><div class="txt">
       <h2>Then the algorithm changed</h2>
       <p>Before 2023, the split was simple: of every fare, drivers got <span class="tag t-driver">75%</span> and Uber kept <span class="tag t-uber">25%</span>.</p>
-      <blockquote>“Until the introduction of dynamic pricing, Uber had publicly advertised their commission rates at 25% (having risen from 20%)”<cite>§4.3 Commission / Take Rates / Surplus · p. 1489</cite></blockquote>
+      <p class="src">§4.3 Commission / Take Rates / Surplus</p>
     </div></div>
 
     <div class="step" data-scene="split" data-mode="after"><div class="txt">
       <h2>"Dynamic pricing" broke the fixed split</h2>
       <p>From early 2023, an algorithm set the passenger's price and the driver's pay separately, trip by trip. Uber's cut now varies every time.</p>
       <p>The typical (median) cut rose to <span class="tag t-uber">29%</span>. Only <b>46%</b> of drivers still got 75% or more on average.</p>
-      <blockquote>“we all agreed [to dynamic pricing], to many things, because we do not have any other option”<cite><span class="who">Driver, workshop</span> · §3.3 Participatory Worker Data Science · p. 1488</cite></blockquote>
+      <p class="src">§4.3 Commission / Take Rates / Surplus</p>
     </div></div>
 
     <div class="step" data-scene="split" data-mode="bigfare"><div class="txt">
       <h2>The bigger the fare, the bigger Uber's slice</h2>
       <p>Uber's cut was largest on the most valuable trips. The jobs drivers most hope for are exactly where Uber takes the most.</p>
       <p class="note">Bars are illustrative, showing the pattern found in the paper.</p>
-      <blockquote>“In this model, the house always wins.”<cite>§5.3 The Ethics of Dynamic Pay and Pricing · p. 1492</cite></blockquote>
+      <p class="src">§4.3 Commission / Take Rates / Surplus</p>
     </div></div>
 
     <div class="step" data-scene="surplus"><div class="txt">
       <h2>Uber's margin grew by 38%</h2>
       <p>For every hour a driver spent on a trip, what Uber kept after paying the driver rose from <span class="big">£8.47</span> to <span class="big">£11.70</span>.</p>
-      <blockquote>“We find that Uber’s average surplus per worker hour (minus non-driver costs) has increased by 38%”<cite>§4.3 Commission / Take Rates / Surplus · p. 1490</cite></blockquote>
+      <p class="src">§4.3 Commission / Take Rates / Surplus</p>
     </div></div>
 
     <div class="step" data-scene="wait"><div class="txt">
       <h2>Meanwhile, more waiting</h2>
       <p>Time on trips stayed flat at around two hours a day. Unpaid waiting kept climbing, and since 2023 drivers usually spend <b>more time waiting than driving passengers</b>.</p>
       <p class="note">Approximate daily averages redrawn from Figure 2.</p>
-      <blockquote>“it doesn’t cost Uber anything to have every one of us on the road at the same time, regardless how much work there is”<cite><span class="who">Driver, workshop</span> · §3.3 Participatory Worker Data Science · p. 1488</cite></blockquote>
+      <p class="src">§4.2 Utilisation Rates</p>
     </div></div>
 
     <div class="step" data-scene="real"><div class="txt">
       <h2>Real pay went down</h2>
       <p>Adjusted for inflation, comparing the year before dynamic pricing with the year after, Tribunal-definition pay fell from <span class="big">£22.20</span> to <span class="big">£19.06</span> an hour.</p>
-      <blockquote>“On the Employment Tribunal definition, average pay per hour the year prior to dynamic pricing was £22.20 (adjusted for inflation), vs an average of £19.06 the year post-dynamic pricing.”<cite>§4.1 Pay · p. 1489</cite></blockquote>
+      <p class="src">§4.1 Pay</p>
     </div></div>
 
     <div class="step" data-scene="waffle" data-mode="all"><div class="txt">
       <h2>Not everyone lost equally</h2>
       <p>We followed 114 drivers who worked a full year either side of the change. Each square is one of them.</p>
-      <blockquote>“While a small number of drivers are earning more per hour worked, the majority are earning less.”<cite>§1 Introduction · p. 1485</cite></blockquote>
+      <p class="src">§4.4 Inequality Between Drivers</p>
     </div></div>
 
     <div class="step" data-scene="waffle" data-mode="split"><div class="txt">
       <h2>Most were worse off</h2>
       <p><span class="tag t-uber">93 drivers</span> earned less per hour. <span class="tag t-driver">21</span> earned more. The gap between drivers grew, and hours or experience didn't explain who won or lost.</p>
-      <blockquote>“We found that 93 drivers were worse off in terms of their average per hour pay after dynamic pricing, and 21 were better off”<cite>§4.4 Inequality Between Drivers · p. 1490</cite></blockquote>
+      <p class="src">§4.4 Inequality Between Drivers</p>
     </div></div>
 
     <div class="step" data-scene="predict" data-mode="before"><div class="txt">
       <h2>Pay used to be predictable</h2>
       <p>Before 2023, a simple model could predict a trip's pay quite well from distance, duration and time of day. Drivers could plan.</p>
       <p class="note">Each dot: predicted vs actual pay (illustrative).</p>
-      <blockquote>“A driver’s livelihood depends on their ability to guess what kinds of trips they will get at particular times and places, and how much those trips will pay.”<cite>§4.5 Predictability of Pay · p. 1491</cite></blockquote>
+      <p class="src">§4.5 Predictability of Pay</p>
     </div></div>
 
     <div class="step" data-scene="predict" data-mode="after"><div class="txt">
       <h2>Then the old rules stopped working</h2>
       <p>Trained on 2022 trips, the model failed completely on 2023: it did far worse than just guessing the average. Whatever drivers had learned about their pay no longer held.</p>
-      <blockquote>“how much a driver can expect to earn from a trip of a certain duration / distance, at a given time, can no longer be predicted based on similar trips from before dynamic pricing”<cite>§1 Introduction · p. 1485</cite></blockquote>
+      <p class="src">§4.5 Predictability of Pay</p>
     </div></div>
   </div>
 </section>
@@ -285,13 +286,13 @@
 
   <footer>
     Binns, R.*, Stein, J.*, Datta, S., Van Kleek, M., &amp; Shadbolt, N. (2025). Not Even Nice Work If You Can Get It: A Longitudinal Study of Uber's Algorithmic Pay and Pricing. <i>FAccT '25</i>, Athens, pp. 1484–1497. doi:10.1145/3715275.3732099 (*shared first authors)<br>
-    Quotes are from the published paper (CC BY 4.0); page numbers refer to the FAccT '25 proceedings. Thanks to Worker Info Exchange, the App Drivers and Couriers Union, and every driver who shared their data. Figures marked illustrative show patterns, not exact values. <a href="../">More papers</a>
+    Section references are to the published paper. Thanks to Worker Info Exchange, the App Drivers and Couriers Union, and every driver who shared their data. Figures marked illustrative show patterns, not exact values. <a href="../">More papers</a>
   </footer>
 </section>
 </main>
 
 <script src="../lib/d3.min.js"></script>
 <script src="../lib/scrollama.min.js"></script>
-<script src="story.js?v=1795199155"></script>
+<script src="story.js?v=1795199302"></script>
 </body>
 </html>
