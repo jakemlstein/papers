@@ -8,61 +8,69 @@
 <meta property="og:title" content="What happened to Uber drivers' pay after the algorithm took over?">
 <meta property="og:description" content="1.5 million trips. 258 drivers. One algorithm. An interactive explainer of our FAccT 2025 paper.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f7f3ec; --ink:#1d1b18; --muted:#6b645a; --card:#fffdf8;
-    --driver:#14866d; --uber:#e2522f; --standby:#f0b429; --enroute:#7fb7a8;
-    --line:#d9d1c4;
+    /* Oxford brand palette */
+    --oxblue:#002147; --bg:#F1EEE9; --ink:#002147; --muted:#61615F; --card:#ffffff;
+    --driver:#15616D; --uber:#AA1A2D; --standby:#E2C044; --enroute:#789E9E;
+    --line:#D9D8D6;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 Inter,system-ui,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 Montserrat,'Proxima Nova',system-ui,sans-serif}
   a{color:var(--driver)}
   .skip{position:absolute;left:-999px;top:0;background:#000;color:#fff;padding:8px 12px;z-index:99}
   .skip:focus{left:8px}
 
   /* Hero */
-  .hero{min-height:100vh;display:grid;place-items:center;text-align:center;padding:40px 20px;position:relative;overflow:hidden}
-  .hero .kicker{font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;color:var(--uber)}
-  .hero h1{font-family:Fraunces,serif;font-weight:800;font-size:clamp(36px,7vw,84px);line-height:1.02;margin:.25em 0 .3em;max-width:14ch}
-  .hero p.sub{font-size:clamp(18px,2.2vw,23px);max-width:34ch;margin:0 auto;color:var(--muted)}
-  .hero .meta{margin-top:28px;font-size:14px;color:var(--muted)}
-  .road{position:absolute;left:0;right:0;bottom:60px;height:4px;background:repeating-linear-gradient(90deg,var(--ink) 0 30px,transparent 30px 60px);opacity:.25}
+  .hero{min-height:100vh;display:grid;place-items:center;text-align:center;padding:40px 20px;position:relative;overflow:hidden;background:var(--oxblue);color:#fff}
+  .logos{display:flex;align-items:center;justify-content:center;gap:clamp(20px,4vw,48px);flex-wrap:wrap;margin-bottom:48px}
+  .logos img{height:clamp(52px,7vw,84px);width:auto;display:block}
+  .logos .oms{height:clamp(62px,8.5vw,100px)} .logos .wie{height:clamp(26px,3.6vw,38px)}
+  .hero .kicker{font-weight:500;font-style:italic;letter-spacing:.08em;text-transform:uppercase;font-size:13px;color:rgba(255,255,255,.75)}
+  .hero h1{font-weight:400;font-style:italic;font-size:clamp(34px,6.5vw,76px);line-height:1.05;margin:.25em auto .35em;max-width:16ch}
+  .hero p.sub{font-size:clamp(17px,2vw,21px);max-width:36ch;margin:0 auto;color:rgba(255,255,255,.85)}
+  .hero .meta{margin-top:28px;font-size:14px;color:rgba(255,255,255,.85)}
+  .hero .meta small{display:block;margin-top:4px;color:rgba(255,255,255,.6);font-size:12px}
+  .road{position:absolute;left:0;right:0;bottom:60px;height:4px;background:repeating-linear-gradient(90deg,#fff 0 30px,transparent 30px 60px);opacity:.3}
   .car{position:absolute;bottom:64px;left:-120px;width:90px;animation:drive 9s linear infinite}
   @keyframes drive{to{transform:translateX(calc(100vw + 240px))}}
-  .scrollcue{margin-top:36px;font-size:14px;color:var(--muted);animation:bob 1.8s ease-in-out infinite}
+  .scrollcue{margin-top:36px;font-size:14px;color:rgba(255,255,255,.7);animation:bob 1.8s ease-in-out infinite}
   @keyframes bob{50%{transform:translateY(6px)}}
 
   /* Scrolly */
   .scrolly{position:relative;display:flex;gap:2rem;max-width:1200px;margin:0 auto;padding:0 20px}
   .graphic{position:sticky;top:0;height:100vh;flex:1 1 58%;display:flex;align-items:center;justify-content:center}
-  .graphic svg{width:100%;max-height:88vh;background:var(--card);border-radius:20px;box-shadow:0 10px 40px rgba(60,40,10,.08)}
+  .graphic svg{width:100%;max-height:88vh;background:var(--card);border-radius:20px;box-shadow:0 10px 40px rgba(0,33,71,.08)}
   .steps{flex:1 1 42%;position:relative;z-index:2}
   .step{min-height:85vh;display:flex;align-items:center}
-  .step .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:0 4px 18px rgba(60,40,10,.06);opacity:.35;transition:opacity .4s}
+  .step .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:0 4px 18px rgba(0,33,71,.06);opacity:.35;transition:opacity .4s}
   .step.is-active .card{opacity:1}
   .step:last-child{min-height:100vh}
-  .card h2{font-family:Fraunces,serif;font-size:26px;line-height:1.15;margin:0 0 .4em}
+  .card h2{font-weight:400;font-style:italic;font-size:25px;line-height:1.2;margin:0 0 .45em}
+  .card h2::before{content:'// ';color:var(--muted)}
   .card p{margin:.5em 0}
-  .big{font-family:Fraunces,serif;font-weight:800;font-size:1.4em}
+  .big{font-weight:700;font-size:1.35em}
   .tag{display:inline-block;padding:0 .4em;border-radius:6px;color:#fff;font-weight:700;font-size:.9em}
-  .t-driver{background:var(--driver)} .t-uber{background:var(--uber)} .t-standby{background:var(--standby);color:#1d1b18} .t-enroute{background:var(--enroute);color:#1d1b18}
+  .t-driver{background:var(--driver)} .t-uber{background:var(--uber)} .t-standby{background:var(--standby);color:var(--oxblue)} .t-enroute{background:var(--enroute);color:#fff}
   .note{font-size:13px;color:var(--muted)}
 
   /* SVG text */
-  svg text{font-family:Inter,system-ui,sans-serif;fill:var(--ink)}
-  .lbl{font-size:15px} .lbl-s{font-size:12px;fill:var(--muted)} .num{font-family:Fraunces,serif;font-weight:800}
+  svg text{font-family:Montserrat,system-ui,sans-serif;fill:var(--ink)}
+  .lbl{font-size:15px} .lbl-s{font-size:12px;fill:var(--muted)} .num{font-weight:700}
   .scene{opacity:0;pointer-events:none;transition:opacity .6s}
   .scene.on{opacity:1}
 
   /* Outro */
   .outro{max-width:760px;margin:0 auto;padding:80px 20px 120px}
-  .outro h2{font-family:Fraunces,serif;font-size:36px;line-height:1.1}
+  .outro h2{font-weight:400;font-style:italic;font-size:36px;line-height:1.1}
+  .outro h2::before,.outro h3::before{content:'// ';color:var(--muted)}
+  .outro h3{font-weight:400;font-style:italic;font-size:24px}
   .asks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:24px 0}
   .ask{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
   .ask b{display:block;margin-bottom:4px}
-  .btn{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;margin:6px 8px 6px 0;font-weight:500}
+  .btn{display:inline-block;background:var(--oxblue);color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;margin:6px 8px 6px 0;font-weight:500}
   .btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
   footer{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px;margin-top:40px}
 
@@ -83,14 +91,19 @@
 
 <header class="hero">
   <div>
+    <div class="logos" role="list" aria-label="Partners">
+      <img role="listitem" src="../assets/oxford-cs.png" alt="University of Oxford Department of Computer Science">
+      <img role="listitem" class="oms" src="../assets/oms.png" alt="Oxford Martin School">
+      <img role="listitem" class="wie" src="../assets/wie.png" alt="Worker Info Exchange">
+    </div>
     <div class="kicker">FAccT 2025 · Interactive explainer</div>
     <h1>Not even nice work if you can get it</h1>
     <p class="sub">What happened to Uber drivers' pay when an algorithm started setting it? We asked the drivers for their data and found out.</p>
-    <div class="meta">Reuben Binns, Jake Stein, Siddhartha Datta, Max Van Kleek &amp; Nigel Shadbolt · University of Oxford</div>
+    <div class="meta">Reuben Binns*, Jake Stein*, Siddhartha Datta, Max Van Kleek &amp; Nigel Shadbolt<small>* Shared first authors · University of Oxford</small></div>
     <div class="scrollcue" aria-hidden="true">Scroll to start ↓</div>
   </div>
   <div class="road" aria-hidden="true"></div>
-  <svg class="car" viewBox="0 0 90 40" aria-hidden="true"><path d="M8 26 L14 14 Q17 9 24 9 L56 9 Q62 9 67 14 L76 22 L84 24 Q88 25 88 29 L88 31 L2 31 L2 28 Q2 26 8 26Z" fill="#1d1b18"/><path d="M20 14 L26 12 L44 12 L44 22 L16 22Z M48 12 L58 12 L68 22 L48 22Z" fill="#cfe7e0"/><circle cx="22" cy="31" r="7" fill="#1d1b18" stroke="#f7f3ec" stroke-width="3"/><circle cx="68" cy="31" r="7" fill="#1d1b18" stroke="#f7f3ec" stroke-width="3"/></svg>
+  <svg class="car" viewBox="0 0 90 40" aria-hidden="true"><path d="M8 26 L14 14 Q17 9 24 9 L56 9 Q62 9 67 14 L76 22 L84 24 Q88 25 88 29 L88 31 L2 31 L2 28 Q2 26 8 26Z" fill="#ffffff"/><path d="M20 14 L26 12 L44 12 L44 22 L16 22Z M48 12 L58 12 L68 22 L48 22Z" fill="#B9D6F2"/><circle cx="22" cy="31" r="7" fill="#ffffff" stroke="#002147" stroke-width="3"/><circle cx="68" cy="31" r="7" fill="#ffffff" stroke="#002147" stroke-width="3"/></svg>
 </header>
 
 <main>
@@ -232,7 +245,7 @@
   <a class="btn alt" href="https://www.workerinfoexchange.org/">Worker Info Exchange</a>
 
   <footer>
-    Binns, R., Stein, J., Datta, S., Van Kleek, M., &amp; Shadbolt, N. (2025). Not Even Nice Work If You Can Get It; A Longitudinal Study of Uber's Algorithmic Pay and Pricing. <i>FAccT '25</i>, Athens. doi:10.1145/3715275.3732099<br>
+    Binns, R.*, Stein, J.*, Datta, S., Van Kleek, M., &amp; Shadbolt, N. (2025). Not Even Nice Work If You Can Get It; A Longitudinal Study of Uber's Algorithmic Pay and Pricing. <i>FAccT '25</i>, Athens. doi:10.1145/3715275.3732099 (*shared first authors)<br>
     Thanks to Worker Info Exchange, the App Drivers and Couriers Union, and every driver who shared their data. Figures marked illustrative show patterns, not exact values. <a href="../">More papers</a>
   </footer>
 </section>

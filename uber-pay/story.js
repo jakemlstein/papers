@@ -3,7 +3,8 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const D = ms => (reduce ? 0 : ms);
   const W = 640, H = 560;
-  const C = { driver: '#14866d', uber: '#e2522f', standby: '#f0b429', enroute: '#7fb7a8', ink: '#1d1b18', muted: '#6b645a', line: '#d9d1c4' };
+  // Oxford brand palette
+  const C = { driver: '#15616D', uber: '#AA1A2D', standby: '#E2C044', enroute: '#789E9E', ink: '#002147', muted: '#61615F', line: '#D9D8D6' };
   const svg = d3.select('#viz');
   const fmt = d3.format(',.0f');
   const money = v => '£' + v.toFixed(2);
@@ -12,7 +13,7 @@
 
   const scenes = {};
   const make = id => (scenes[id] = { g: svg.append('g').attr('class', 'scene').attr('id', 's-' + id) });
-  const title = (g, t) => g.append('text').attr('x', 40).attr('y', 56).attr('class', 'lbl num').style('font-size', '24px').text(t);
+  const title = (g, t) => g.append('text').attr('x', 40).attr('y', 56).attr('class', 'lbl num').style('font-size', '22px').style('font-style', 'italic').style('font-weight', 400).text('// ' + t);
 
   function countUp(sel, to, f, ms = 1400, from = 0) {
     sel.transition().duration(D(ms)).ease(d3.easeCubicOut)
@@ -158,7 +159,7 @@
     s.enter = mode => {
       if (jitter) { jitter.stop(); jitter = null; }
       if (mode === 'before') {
-        ttl.text('Before 2023: a fixed split');
+        ttl.text('// Before 2023: a fixed split');
         grp.transition().duration(D(300)).attr('opacity', 0);
         const x0 = 170, w = 300, top = 130, hh = 340;
         big.transition().duration(D(400)).attr('opacity', 1);
@@ -171,7 +172,7 @@
         big.transition().duration(D(400)).attr('opacity', 0);
         grp.transition().duration(D(400)).attr('opacity', 1);
         if (mode === 'after') {
-          ttl.text('After: a different split on every trip');
+          ttl.text('// After: a different split on every trip');
           drawTrips('uberAfter', false, 900);
           cap.text('Illustrative trips. Median Uber cut: 29%.');
           if (!reduce) {
@@ -181,7 +182,7 @@
             }, 1400);
           }
         } else {
-          ttl.text('Sorted by fare: bigger trips, bigger cut');
+          ttl.text('// Sorted by fare: bigger trips, bigger cut');
           drawTrips('uberBig', true, 1100);
           cap.text('Illustrative trips sorted by fare (cheapest left). Pattern from the paper.');
         }
@@ -232,7 +233,7 @@
     const pT = g.append('path').datum(trip).attr('d', line).attr('fill', 'none').attr('stroke', C.driver).attr('stroke-width', 5).attr('stroke-linecap', 'round');
     const pS = g.append('path').datum(stand).attr('d', line).attr('fill', 'none').attr('stroke', C.standby).attr('stroke-width', 5).attr('stroke-linecap', 'round');
     g.append('text').attr('x', 566).attr('y', y(2) + 22).attr('class', 'lbl').style('fill', C.driver).style('font-weight', 700).attr('text-anchor', 'end').text('On a trip');
-    const lS = g.append('text').attr('x', 566).attr('y', y(2.6) - 14).attr('class', 'lbl').style('fill', '#b07d00').style('font-weight', 700).attr('text-anchor', 'end').text('Waiting (unpaid)');
+    const lS = g.append('text').attr('x', 566).attr('y', y(2.6) - 14).attr('class', 'lbl').style('fill', C.ink).style('font-weight', 700).attr('text-anchor', 'end').text('Waiting (unpaid)');
     // hourglass
     const hg = g.append('g').attr('transform', 'translate(200,150)');
     hg.append('path').attr('d', 'M-18,-26 H18 L2,0 L18,26 H-18 L-2,0Z').attr('fill', 'none').attr('stroke', C.ink).attr('stroke-width', 3);
@@ -288,12 +289,12 @@
     const pos = (k, c = cols, x0 = ox, y0 = oy) => [x0 + (k % c) * cell, y0 + Math.floor(k / c) * cell];
     s.enter = mode => {
       if (mode === 'all') {
-        ttl.text('114 drivers, a year either side');
+        ttl.text('// 114 drivers, a year either side');
         dots.transition().delay(d => D(order[d] * 10)).duration(D(500)).attr('fill', C.muted)
           .attr('cx', d => pos(order[d])[0]).attr('cy', d => pos(order[d])[1]);
         lWorse.attr('opacity', 0); lBetter.attr('opacity', 0);
       } else {
-        ttl.text('Who gained, who lost');
+        ttl.text('// Who gained, who lost');
         // worse-off block on the left (10 cols), better-off on the right (3 cols)
         dots.transition().delay(d => D(d * 8)).duration(D(800)).ease(d3.easeCubicInOut)
           .attr('fill', d => (d < 93 ? C.uber : C.driver))
@@ -321,12 +322,12 @@
     const warn = g.append('text').attr('x', 560).attr('y', 98).attr('text-anchor', 'end').attr('class', 'lbl').style('font-weight', 700).style('fill', C.uber).attr('opacity', 0).text('model breaks');
     s.enter = mode => {
       if (mode === 'before') {
-        ttl.text('Predicting 2022 from earlier years');
+        ttl.text('// Predicting 2022 from earlier years');
         dots.transition().duration(D(900)).attr('cy', d => y(d.good)).attr('fill', C.driver);
         score.text('R² ≈ 0.4–0.9').style('fill', C.driver);
         warn.attr('opacity', 0);
       } else {
-        ttl.text('Predicting 2023 from 2022');
+        ttl.text('// Predicting 2023 from 2022');
         dots.transition().delay(() => D(rng() * 400)).duration(D(1100)).ease(d3.easeElasticOut.amplitude(1).period(0.5)).attr('cy', d => y(d.bad)).attr('fill', C.uber);
         score.text('R² = −54').style('fill', C.uber);
         warn.transition().delay(D(700)).duration(D(300)).attr('opacity', 1);
