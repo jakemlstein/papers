@@ -71,7 +71,13 @@
     const bSubj = beam([[96, 262], [150, 262]]);
     const bCtrl1 = beam([[540, 262], [500, 168]]);
     const bCtrl2 = beam([[540, 270], [470, 345]]);
-    const bGoal = beam([[96, 250], [300, 130], [420, 150]], 7);
+    // shared view: copies of the controller's beams that slide over to the data subject
+    const C1 = [[540, 262], [500, 168]], C2 = [[540, 270], [470, 345]];
+    const S1 = [[96, 250], [342, 168]], S2 = [[96, 274], [342, 352]];
+    const sh1 = beam(C1), sh2 = beam(C2);
+    const slide = (path, from, to, dl) => path.attr('d', d3.line()(from)).attr('opacity', 0.75)
+      .transition().delay(D(dl)).duration(D(1400)).ease(d3.easeCubicInOut)
+      .attrTween('d', () => { const i = d3.interpolate(from, to); return t => d3.line()(i(t)); });
     const tag = g.append('text').attr('x', 320).attr('y', 480).attr('text-anchor', 'middle').attr('class', 'num').style('font-size', '15px').style('letter-spacing', '0.12em').attr('opacity', 0);
     let march = null;
     s.enter = mode => {
@@ -80,14 +86,14 @@
       const on = (sel, v, dl = 0) => sel.transition().delay(D(dl)).duration(D(500)).attr('opacity', v);
       if (mode === 'subject') {
         ttl.text('// The data subject');
-        on(bSubj, 0.75); on(bCtrl1, 0); on(bCtrl2, 0); on(bGoal, 0); on(wedge, 0);
+        on(bSubj, 0.75); on(bCtrl1, 0); on(bCtrl2, 0); on(sh1, 0); on(sh2, 0); on(wedge, 0);
         on(scA, 0.25); on(ctrl, 0.25); on(scP, 1); on(subj, 1); on(me, 1);
         dots.transition().duration(D(400)).attr('r', 0); trend.transition().duration(D(400)).attr('x2', ax(0.05)).attr('y2', ay(0.05));
         meSmall.transition().duration(D(400)).attr('r', 0);
         tag.attr('opacity', 0);
       } else if (mode === 'controller') {
         ttl.text('// The data controller');
-        on(scA, 1); on(ctrl, 1); on(subj, 0.6); on(bSubj, 0.4); on(bGoal, 0);
+        on(scA, 1); on(ctrl, 1); on(subj, 0.6); on(bSubj, 0.4); on(sh1, 0); on(sh2, 0);
         dots.transition().delay((d, i) => D(200 + i * 40)).duration(D(400)).attr('r', 9);
         trend.transition().delay(D(1100)).duration(D(800)).attr('x2', ax(0.95)).attr('y2', ay(0.95));
         meSmall.attr('cx', 207).attr('cy', 258).transition().delay(D(900)).duration(D(1000)).ease(d3.easeCubicInOut).attr('cx', meTarget[0]).attr('cy', meTarget[1]).attr('r', 8);
@@ -95,11 +101,12 @@
         tag.text('INFORMATION ASYMMETRY').style('fill', C.uber).transition().delay(D(1800)).duration(D(400)).attr('opacity', 1);
       } else {
         ttl.text('// Pooling the view');
-        on(subj, 1); on(bSubj, 0.75); on(bGoal, 0.85, 200); on(wedge, 0.18);
+        on(subj, 1); on(bSubj, 0.4); on(wedge, 0.18);
+        slide(sh1, C1, S1, 300); slide(sh2, C2, S2, 300);
         dots.transition().duration(D(300)).attr('r', 9); trend.attr('x2', ax(0.95)).attr('y2', ay(0.95));
         meSmall.attr('cx', meTarget[0]).attr('cy', meTarget[1]).attr('r', 8);
         on(bCtrl1, 0.75); on(bCtrl2, 0.75); on(scA, 1); on(ctrl, 1);
-        tag.text('SAME VIEW, BOTH SIDES').style('fill', C.driver).attr('opacity', 0).transition().delay(D(700)).duration(D(400)).attr('opacity', 1);
+        tag.text('SAME VIEW, BOTH SIDES').style('fill', C.driver).attr('opacity', 0).transition().delay(D(1700)).duration(D(400)).attr('opacity', 1);
       }
     };
     s.exit = () => { if (march) { march.stop(); march = null; } };
