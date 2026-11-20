@@ -449,8 +449,8 @@
     const ox = (W - cols * cell) / 2 + cell / 2, oy = 130;
     const order = d3.shuffle(d3.range(N), rng);
     const dots = g.selectAll('rect.cell').data(d3.range(N)).join('rect').attr('class', 'cell').attr('width', 20).attr('height', 20).attr('transform', 'translate(-10,-10)').attr('fill', C.muted);
-    const lWorse = g.append('text').attr('class', 'num').style('fill', C.uber).style('font-size', '30px').attr('opacity', 0).text('93 worse off');
-    const lBetter = g.append('text').attr('class', 'num').style('fill', C.driver).style('font-size', '30px').attr('opacity', 0).text('21 better off');
+    const lWorse = g.append('text').attr('class', 'num').style('fill', C.uber).style('font-size', '22px').attr('opacity', 0).text('93 worse off');
+    const lBetter = g.append('text').attr('class', 'num').style('fill', C.driver).style('font-size', '22px').attr('opacity', 0).text('21 better off');
     const pos = (k, c = cols, x0 = ox, y0 = oy) => [x0 + (k % c) * cell, y0 + Math.floor(k / c) * cell];
     s.enter = mode => {
       if (mode === 'all') {
@@ -463,10 +463,10 @@
         // worse-off block on the left (10 cols), better-off on the right (3 cols)
         dots.transition().delay(d => D(d * 8)).duration(D(800)).ease(d3.easeCubicInOut)
           .attr('fill', d => (d < 93 ? C.uber : C.driver))
-          .attr('x', d => (d < 93 ? pos(d, 10, 60)[0] : pos(d - 93, 3, 460)[0]))
-          .attr('y', d => (d < 93 ? pos(d, 10, 60, 150)[1] : pos(d - 93, 3, 460, 150)[1]));
-        lWorse.attr('x', 60).attr('y', 125).transition().delay(D(1000)).duration(D(400)).attr('opacity', 1);
-        lBetter.attr('x', 448).attr('y', 125).transition().delay(D(1100)).duration(D(400)).attr('opacity', 1);
+          .attr('x', d => (d < 93 ? pos(d, 10, 60)[0] : pos(d - 93, 3, 430)[0]))
+          .attr('y', d => (d < 93 ? pos(d, 10, 60, 150)[1] : pos(d - 93, 3, 430, 150)[1]));
+        lWorse.attr('x', 50).attr('y', 125).transition().delay(D(1000)).duration(D(400)).attr('opacity', 1);
+        lBetter.attr('x', 420).attr('y', 125).transition().delay(D(1100)).duration(D(400)).attr('opacity', 1);
       }
     };
   }
