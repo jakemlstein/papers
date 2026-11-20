@@ -257,7 +257,7 @@
     tile.each(function (d) {
       const parts = d.n.replace(/_/g, '_​').split('​'); const lines = []; let cur = '';
       parts.forEach(pt => { if ((cur + pt).length > 15 && cur) { lines.push(cur); cur = pt; } else cur += pt; }); lines.push(cur);
-      const t = d3.select(this).append('text').attr('x', tw / 2).attr('text-anchor', 'middle').style('font-family', "'IBM Plex Mono', monospace").style('font-size', '7.5px').style('fill', 'rgba(255,255,255,.8)');
+      const t = d3.select(this).append('text').attr('x', tw / 2).attr('text-anchor', 'middle').style('font-family', 'Arial, Helvetica, sans-serif').style('font-size', '7.5px').style('fill', 'rgba(255,255,255,.8)');
       lines.slice(0, 3).forEach((l, k) => t.append('tspan').attr('x', tw / 2).attr('y', th / 2 + 3 + (k - (Math.min(lines.length, 3) - 1) / 2) * 9).text(l));
     });
     // pipeline
@@ -265,7 +265,7 @@
     const node = (x, y, w, label, hot) => {
       const n = pipe.append('g').attr('transform', `translate(${x},${y})`);
       n.append('rect').attr('x', -w / 2).attr('y', -18).attr('width', w).attr('height', 36).attr('fill', hot ? C.driver : '#0b2a52').attr('stroke', hot ? C.driver : '#fff');
-      n.append('text').attr('y', 4).attr('text-anchor', 'middle').style('font-family', "'IBM Plex Mono', monospace").style('font-size', '10.5px').style('fill', hot ? C.bg : '#fff').style('font-weight', hot ? 700 : 400).text(label);
+      n.append('text').attr('y', 4).attr('text-anchor', 'middle').style('font-family', 'Arial, Helvetica, sans-serif').style('font-size', '10.5px').style('fill', hot ? C.bg : '#fff').style('font-weight', hot ? 700 : 400).text(label);
       return n;
     };
     const tc = n => { const t = tiles.find(d => d.n === n); return [t.x + tw / 2, t.y + th]; };
@@ -293,7 +293,7 @@
           .transition().delay(D(1200)).duration(D(400)).attr('opacity', 1);
       } else {
         ttl.text('// Rebuilding the picture');
-        tile.attr('transform', d => `translate(${d.x},${d.y})`).transition().duration(D(600)).attr('opacity', d => (d.key ? 1 : 0.18));
+        tile.interrupt().attr('transform', d => `translate(${d.x},${d.y})`).transition().duration(D(600)).attr('opacity', d => (d.key ? 1 : 0.18));
         tile.select('rect').transition().duration(D(600)).attr('stroke', d => (d.key ? C.driver : 'rgba(255,255,255,.35)')).attr('stroke-width', d => (d.key ? 2.5 : 1));
         count.transition().duration(D(300)).attr('opacity', 0);
         pipe.transition().delay(D(400)).duration(D(400)).attr('opacity', 1);
