@@ -4,7 +4,7 @@
   const D = ms => (reduce ? 0 : ms);
   const W = 640, H = 560;
   // Oxford brand palette
-  const C = { driver: '#15616D', uber: '#AA1A2D', standby: '#E2C044', enroute: '#789E9E', ink: '#002147', muted: '#61615F', line: '#D9D8D6' };
+  const C = { driver: '#00AAB4', uber: '#E6007E', standby: '#E2C044', enroute: '#789E9E', ink: '#FFFFFF', muted: '#4C6A8C', line: '#193658', bg: '#002147' };
   const svg = d3.select('#viz');
   const fmt = d3.format(',.0f');
   const money = v => '£' + v.toFixed(2);
@@ -13,11 +13,96 @@
 
   const scenes = {};
   const make = id => (scenes[id] = { g: svg.append('g').attr('class', 'scene').attr('id', 's-' + id) });
-  const title = (g, t) => g.append('text').attr('x', 40).attr('y', 56).attr('class', 'lbl num').style('font-size', '22px').style('font-style', 'italic').style('font-weight', 400).text('// ' + t);
+  const title = (g, t) => g.append('text').attr('x', 40).attr('y', 56).attr('class', 'lbl').style('font-family', "'IBM Plex Mono', monospace").style('font-size', '13px').style('letter-spacing', '0.12em').style('text-transform', 'uppercase').style('fill', 'rgba(255,255,255,.6)').text('// ' + t);
 
   function countUp(sel, to, f, ms = 1400, from = 0) {
     sel.transition().duration(D(ms)).ease(d3.easeCubicOut)
       .tween('text', function () { const i = d3.interpolate(from, to); return t => (this.textContent = f(i(t))); });
+  }
+
+
+  /* ---------- Scene: information asymmetry (intro) ---------- */
+  {
+    const s = make('asym'), g = s.g;
+    const ttl = title(g, 'Who sees what');
+    const BEAM = '#B9D6F2', PURP = '#D1BDD5', MAUVE = '#776885';
+    // marching-dash beam
+    const beam = (pts, w = 9) => g.append('path').attr('d', d3.line()(pts)).attr('fill', 'none').attr('stroke', BEAM)
+      .attr('stroke-width', w).attr('stroke-dasharray', '2 3').attr('opacity', 0).attr('class', 'beam');
+    const person = (cx, label) => {
+      const p = g.append('g');
+      p.append('circle').attr('cx', cx).attr('cy', 262).attr('r', 24).attr('fill', '#fff');
+      p.append('path').attr('d', `M${cx - 42},400 V352 Q${cx - 42},296 ${cx},296 Q${cx + 42},296 ${cx + 42},352 V400 Z`).attr('fill', '#fff');
+      label.split(' ').forEach((w, i) => p.append('text').attr('x', cx).attr('y', 370 + i * 13).attr('text-anchor', 'middle').attr('class', 'num').style('fill', C.bg).style('font-size', '10px').style('letter-spacing', '0.06em').text(w));
+      return p;
+    };
+    const screen = (x, w, label) => {
+      const sc = g.append('g');
+      sc.append('rect').attr('x', x).attr('y', 150).attr('width', w).attr('height', 220).attr('fill', '#0b2a52').attr('stroke', '#fff').attr('stroke-width', 2);
+      sc.append('rect').attr('x', x + w / 2 - 6).attr('y', 370).attr('width', 12).attr('height', 22).attr('fill', '#fff');
+      sc.append('rect').attr('x', x + w / 2 - 34).attr('y', 392).attr('width', 68).attr('height', 8).attr('fill', '#fff');
+      sc.append('text').attr('x', x + w / 2).attr('y', 428).attr('text-anchor', 'middle').attr('class', 'lbl-s').style('font-size', '12px').style('letter-spacing', '0.1em').text(label);
+      return sc;
+    };
+    const subj = person(58, 'DATA SUBJECT');
+    const ctrl = person(582, 'DATA CONTROLLER');
+    const scP = screen(124, 166, 'PERSONAL DATA');
+    const scA = screen(322, 196, 'AGGREGATE DATA');
+    // personal dot
+    const me = g.append('g').attr('transform', 'translate(207,258)');
+    me.append('circle').attr('r', 34).attr('fill', C.uber).attr('opacity', 0.85);
+    me.append('circle').attr('cy', -8).attr('r', 9).attr('fill', '#fff');
+    me.append('path').attr('d', 'M-15,18 Q-15,2 0,2 Q15,2 15,18 Z').attr('fill', '#fff');
+    // aggregate plot
+    const ax = d3.scaleLinear([0, 1], [342, 500]), ay = d3.scaleLinear([0, 1], [352, 170]);
+    g.append('path').attr('d', `M${ax(0)},${ay(1)} V${ay(0)} H${ax(1)}`).attr('fill', 'none').attr('stroke', 'rgba(255,255,255,.5)');
+    const peers = [];
+    [[0.78, 0.8, C.standby], [0.5, 0.52, C.driver], [0.22, 0.22, MAUVE]].forEach(([cx, cy, col]) => {
+      for (let i = 0; i < 7; i++) peers.push({ x: Math.min(.96, Math.max(.04, cx + normal(0, 0.09)())), y: Math.min(.96, Math.max(.04, cy + normal(0, 0.08)())), col });
+    });
+    const trend = g.append('line').attr('x1', ax(0.05)).attr('y1', ay(0.05)).attr('x2', ax(0.05)).attr('y2', ay(0.05))
+      .attr('stroke', C.uber).attr('stroke-width', 2).attr('stroke-dasharray', '4 4');
+    const dots = g.append('g').selectAll('circle').data(peers).join('circle').attr('cx', d => ax(d.x)).attr('cy', d => ay(d.y)).attr('r', 0).attr('fill', d => d.col).attr('opacity', 0.9);
+    const meSmall = g.append('circle').attr('r', 0).attr('fill', C.uber).attr('stroke', '#fff').attr('stroke-width', 2);
+    const meTarget = [ax(0.3), ay(0.18)];
+    const wedge = g.append('path').attr('fill', BEAM).attr('opacity', 0)
+      .attr('d', `M241,232 L${meTarget[0]},${meTarget[1] - 6} L${meTarget[0]},${meTarget[1] + 6} L241,284 Z`);
+    // beams
+    const bSubj = beam([[96, 262], [150, 262]]);
+    const bCtrl1 = beam([[540, 262], [500, 168]]);
+    const bCtrl2 = beam([[540, 270], [470, 345]]);
+    const bGoal = beam([[96, 250], [300, 130], [420, 150]], 7);
+    const tag = g.append('text').attr('x', 320).attr('y', 480).attr('text-anchor', 'middle').attr('class', 'num').style('font-size', '15px').style('letter-spacing', '0.12em').attr('opacity', 0);
+    let march = null;
+    s.enter = mode => {
+      if (march) march.stop();
+      if (!reduce) { let o = 0; march = d3.timer(() => { o -= 0.4; g.selectAll('.beam').attr('stroke-dashoffset', o); }); }
+      const on = (sel, v, dl = 0) => sel.transition().delay(D(dl)).duration(D(500)).attr('opacity', v);
+      if (mode === 'subject') {
+        ttl.text('// The data subject');
+        on(bSubj, 0.75); on(bCtrl1, 0); on(bCtrl2, 0); on(bGoal, 0); on(wedge, 0);
+        on(scA, 0.25); on(ctrl, 0.25); on(scP, 1); on(subj, 1); on(me, 1);
+        dots.transition().duration(D(400)).attr('r', 0); trend.transition().duration(D(400)).attr('x2', ax(0.05)).attr('y2', ay(0.05));
+        meSmall.transition().duration(D(400)).attr('r', 0);
+        tag.attr('opacity', 0);
+      } else if (mode === 'controller') {
+        ttl.text('// The data controller');
+        on(scA, 1); on(ctrl, 1); on(subj, 0.6); on(bSubj, 0.4); on(bGoal, 0);
+        dots.transition().delay((d, i) => D(200 + i * 40)).duration(D(400)).attr('r', 9);
+        trend.transition().delay(D(1100)).duration(D(800)).attr('x2', ax(0.95)).attr('y2', ay(0.95));
+        meSmall.attr('cx', 207).attr('cy', 258).transition().delay(D(900)).duration(D(1000)).ease(d3.easeCubicInOut).attr('cx', meTarget[0]).attr('cy', meTarget[1]).attr('r', 8);
+        on(wedge, 0.18, 1400); on(bCtrl1, 0.75, 400); on(bCtrl2, 0.75, 400);
+        tag.text('INFORMATION ASYMMETRY').style('fill', C.uber).transition().delay(D(1800)).duration(D(400)).attr('opacity', 1);
+      } else {
+        ttl.text('// Pooling the view');
+        on(subj, 1); on(bSubj, 0.75); on(bGoal, 0.85, 200); on(wedge, 0.18);
+        dots.transition().duration(D(300)).attr('r', 9); trend.attr('x2', ax(0.95)).attr('y2', ay(0.95));
+        meSmall.attr('cx', meTarget[0]).attr('cy', meTarget[1]).attr('r', 8);
+        on(bCtrl1, 0.75); on(bCtrl2, 0.75); on(scA, 1); on(ctrl, 1);
+        tag.text('SAME VIEW, BOTH SIDES').style('fill', C.driver).attr('opacity', 0).transition().delay(D(700)).duration(D(400)).attr('opacity', 1);
+      }
+    };
+    s.exit = () => { if (march) { march.stop(); march = null; } };
   }
 
   /* ---------- Scene: a driver's day ---------- */
@@ -30,14 +115,14 @@
     let acc = 0; hrs.forEach(d => { d.x0 = acc; acc += d.v; d.x1 = acc; });
     const y = 250, h = 80;
     const segs = g.selectAll('.seg').data(hrs).join('g').attr('class', 'seg');
-    segs.append('rect').attr('x', d => x(d.x0)).attr('y', y).attr('height', h).attr('width', 0).attr('rx', 6).attr('fill', d => d.c);
+    segs.append('rect').attr('x', d => x(d.x0)).attr('y', y).attr('height', h).attr('width', 0).attr('fill', d => d.c);
     segs.append('text').attr('x', d => (x(d.x0) + x(d.x1)) / 2).attr('y', y + h + 28).attr('text-anchor', 'middle').attr('class', 'lbl').text(d => d.k);
-    segs.append('text').attr('x', d => (x(d.x0) + x(d.x1)) / 2).attr('y', y + h / 2 + 6).attr('text-anchor', 'middle').attr('class', 'lbl num').style('fill', '#fff').text(d => d.v + 'h');
+    segs.append('text').attr('x', d => (x(d.x0) + x(d.x1)) / 2).attr('y', y + h / 2 + 6).attr('text-anchor', 'middle').attr('class', 'lbl num').style('fill', C.bg).text(d => d.v + 'h');
     const unpaid = g.append('g').attr('opacity', 0);
     unpaid.append('text').attr('x', (x(2.5) + x(total)) / 2).attr('y', y - 18).attr('text-anchor', 'middle').attr('class', 'lbl num').style('fill', C.uber).style('font-size', '22px').text('UNPAID');
     const hatch = svg.append('defs').append('pattern').attr('id', 'hatch').attr('width', 10).attr('height', 10).attr('patternUnits', 'userSpaceOnUse').attr('patternTransform', 'rotate(45)');
-    hatch.append('rect').attr('width', 4).attr('height', 10).attr('fill', 'rgba(255,255,255,.55)');
-    unpaid.append('rect').attr('x', x(2.5)).attr('y', y).attr('width', x(total) - x(2.5)).attr('height', h).attr('rx', 6).attr('fill', 'url(#hatch)');
+    hatch.append('rect').attr('width', 4).attr('height', 10).attr('fill', 'rgba(0,33,71,.55)');
+    unpaid.append('rect').attr('x', x(2.5)).attr('y', y).attr('width', x(total) - x(2.5)).attr('height', h).attr('fill', 'url(#hatch)');
     const brace = (x0, x1, yy, txt, col) => {
       const b = g.append('g').attr('opacity', 0);
       b.append('path').attr('d', `M${x0},${yy + 14} V${yy} H${x1} V${yy + 14}`).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 3);
@@ -46,18 +131,12 @@
     };
     const bUber = brace(x(0), x(2.5), 170, "Uber's \"working time\"", C.uber);
     const bCourt = brace(x(0), x(total), 120, "Tribunal's working time: all of it", C.driver);
-    // little car that drives along the bar
-    const car = g.append('g').attr('transform', `translate(${x(0)},${y - 34})`);
-    car.append('path').attr('d', 'M2 18 L6 9 Q8 6 13 6 L30 6 Q34 6 37 9 L42 15 L46 16 Q48 17 48 19 L48 21 L0 21 L0 19Z').attr('fill', C.ink);
-    car.append('circle').attr('cx', 11).attr('cy', 21).attr('r', 4).attr('fill', C.ink);
-    car.append('circle').attr('cx', 37).attr('cy', 21).attr('r', 4).attr('fill', C.ink);
     g.append('text').attr('x', 40).attr('y', 470).attr('class', 'lbl-s').text('Illustrative day; proportions based on the paper\'s 2023–24 daily averages.');
     let drawn = false;
     s.enter = mode => {
       if (!drawn) {
         drawn = true;
         segs.select('rect').transition('grow').delay((d, i) => D(i * 450)).duration(D(600)).attr('width', d => x(d.x1) - x(d.x0));
-        if (!reduce) (function loop() { car.attr('transform', `translate(${x(0)},${y - 34})`).transition().duration(5000).ease(d3.easeLinear).attr('transform', `translate(${x(total) - 48},${y - 34})`).on('end', loop); })();
       }
       unpaid.transition().duration(D(500)).attr('opacity', mode === 'uber' ? 1 : 0);
       bUber.transition().duration(D(500)).attr('opacity', mode === 'uber' || mode === 'court' ? 1 : 0);
@@ -74,7 +153,7 @@
     const y = d3.scaleLinear([0, 34], [470, 120]);
     const bw = 170, xs = [110, 360];
     const bars = g.selectAll('.b').data(data).join('g');
-    bars.append('rect').attr('x', (d, i) => xs[i]).attr('width', bw).attr('y', 470).attr('height', 0).attr('rx', 10).attr('fill', d => d.c);
+    bars.append('rect').attr('x', (d, i) => xs[i]).attr('width', bw).attr('y', 470).attr('height', 0).attr('fill', d => d.c);
     const nums = bars.append('text').attr('x', (d, i) => xs[i] + bw / 2).attr('y', 455).attr('text-anchor', 'middle').attr('class', 'num').style('font-size', '40px').text('£0');
     bars.append('text').attr('x', (d, i) => xs[i] + bw / 2).attr('y', 500).attr('text-anchor', 'middle').attr('class', 'lbl').text(d => d.k);
     g.append('line').attr('x1', 80).attr('x2', 570).attr('y1', 470).attr('y2', 470).attr('stroke', C.ink);
@@ -96,7 +175,7 @@
     const nodes = [ { k: 'Uber', sub: 'holds the data', x: 100, c: C.ink }, { k: 'Worker Info', sub: 'Exchange', x: 320, c: C.standby }, { k: 'Oxford', sub: 'researchers', x: 540, c: C.driver } ];
     const ny = 300;
     nodes.forEach(n => {
-      g.append('circle').attr('cx', n.x).attr('cy', ny).attr('r', 54).attr('fill', '#fff').attr('stroke', n.c).attr('stroke-width', 4);
+      g.append('circle').attr('cx', n.x).attr('cy', ny).attr('r', 54).attr('fill', C.bg).attr('stroke', n.c).attr('stroke-width', 4);
       g.append('text').attr('x', n.x).attr('y', ny + 82).attr('text-anchor', 'middle').attr('class', 'lbl').style('font-weight', 700).text(n.k);
       g.append('text').attr('x', n.x).attr('y', ny + 100).attr('text-anchor', 'middle').attr('class', 'lbl-s').text(n.sub);
     });
@@ -132,17 +211,17 @@
     const sorted = trips.slice().sort((a, b) => a.fare - b.fare);
     sorted.forEach((d, r) => { d.rank = r; d.uberBig = 0.12 + 0.33 * (r / (N - 1)); });
     const grp = g.selectAll('.trip').data(trips).join('g').attr('class', 'trip');
-    grp.append('rect').attr('class', 'drv').attr('fill', C.driver).attr('rx', 3);
-    grp.append('rect').attr('class', 'ub').attr('fill', C.uber).attr('rx', 3);
+    grp.append('rect').attr('class', 'drv').attr('fill', C.driver);
+    grp.append('rect').attr('class', 'ub').attr('fill', C.uber);
     const legend = g.append('g').attr('transform', 'translate(50,90)');
     [[C.driver, 'Driver'], [C.uber, 'Uber']].forEach(([c, t], i) => {
-      legend.append('rect').attr('x', i * 110).attr('width', 16).attr('height', 16).attr('rx', 3).attr('fill', c);
+      legend.append('rect').attr('x', i * 110).attr('width', 16).attr('height', 16).attr('fill', c);
       legend.append('text').attr('x', i * 110 + 22).attr('y', 13).attr('class', 'lbl').text(t);
     });
     const big = g.append('g');
-    const bigD = big.append('rect').attr('fill', C.driver).attr('rx', 10);
-    const bigU = big.append('rect').attr('fill', C.uber).attr('rx', 10);
-    const bigT1 = big.append('text').attr('class', 'num').style('font-size', '48px').style('fill', '#fff').attr('text-anchor', 'middle');
+    const bigD = big.append('rect').attr('fill', C.driver);
+    const bigU = big.append('rect').attr('fill', C.uber);
+    const bigT1 = big.append('text').attr('class', 'num').style('font-size', '48px').style('fill', C.bg).attr('text-anchor', 'middle');
     const bigT2 = big.append('text').attr('class', 'num').style('font-size', '36px').style('fill', '#fff').attr('text-anchor', 'middle');
     const cap = g.append('text').attr('x', 320).attr('y', 510).attr('text-anchor', 'middle').attr('class', 'lbl-s');
     let jitter = null;
@@ -199,22 +278,22 @@
     const y = d3.scaleLinear([0, 13], [460, 130]);
     const xs = [150, 370], bw = 130;
     const bars = g.selectAll('.b').data(data).join('g');
-    bars.append('rect').attr('x', (d, i) => xs[i]).attr('width', bw).attr('rx', 10).attr('fill', C.uber).attr('opacity', (d, i) => (i ? 1 : 0.55));
+    bars.append('rect').attr('x', (d, i) => xs[i]).attr('width', bw).attr('fill', C.uber).attr('opacity', (d, i) => (i ? 1 : 0.55));
     const nums = bars.append('text').attr('x', (d, i) => xs[i] + bw / 2).attr('text-anchor', 'middle').attr('class', 'num').style('font-size', '34px');
     bars.append('text').attr('x', (d, i) => xs[i] + bw / 2).attr('y', 490).attr('text-anchor', 'middle').attr('class', 'lbl').style('font-weight', 700).text(d => d.k);
     bars.append('text').attr('x', (d, i) => xs[i] + bw / 2).attr('y', 510).attr('text-anchor', 'middle').attr('class', 'lbl-s').text(d => d.sub);
     g.append('line').attr('x1', 110).attr('x2', 540).attr('y1', 460).attr('y2', 460).attr('stroke', C.ink);
-    const badge = g.append('g').attr('transform', 'translate(540,150)').attr('opacity', 0);
-    badge.append('circle').attr('r', 46).attr('fill', C.ink);
-    badge.append('text').attr('y', 10).attr('text-anchor', 'middle').attr('class', 'num').style('fill', '#fff').style('font-size', '28px').text('+38%');
+    const badge = g.append('g').attr('transform', 'translate(560,104)').attr('opacity', 0);
+    badge.append('rect').attr('x', -54).attr('y', -26).attr('width', 108).attr('height', 52).attr('fill', C.uber);
+    badge.append('text').attr('y', 10).attr('text-anchor', 'middle').attr('class', 'num').style('fill', '#fff').style('font-size', '28px').style('font-size', '26px').text('+38%');
     s.enter = () => {
-      bars.select('rect').attr('y', 460).attr('height', 0).transition().delay((d, i) => D(i * 500)).duration(D(1100)).ease(d3.easeBackOut.overshoot(1.2)).attr('y', d => y(d.v)).attr('height', d => 460 - y(d.v));
+      bars.select('rect').attr('y', 460).attr('height', 0).transition().delay((d, i) => D(i * 500)).duration(D(1100)).ease(d3.easeCubicOut).attr('y', d => y(d.v)).attr('height', d => 460 - y(d.v));
       nums.each(function (d, i) {
         d3.select(this).attr('y', 450).transition().delay(D(i * 500)).duration(D(1100)).attr('y', y(d.v) - 14)
           .tween('text', function () { const it = d3.interpolate(0, d.v); return t => (this.textContent = money(it(t))); });
       });
-      badge.attr('opacity', 0).attr('transform', 'translate(540,150) scale(0.2)')
-        .transition().delay(D(1500)).duration(D(600)).ease(d3.easeBackOut.overshoot(2)).attr('opacity', 1).attr('transform', 'translate(540,150) scale(1)');
+      badge.attr('opacity', 0).attr('transform', 'translate(560,104)')
+        .transition().delay(D(1500)).duration(D(300)).attr('opacity', 1);
     };
   }
 
@@ -230,14 +309,10 @@
     g.append('g').attr('transform', 'translate(0,460)').call(d3.axisBottom(x).tickFormat(d3.format('d'))).selectAll('text').style('font-size', '13px');
     g.append('g').attr('transform', 'translate(90,0)').call(d3.axisLeft(y).ticks(4).tickFormat(d => d + 'h')).selectAll('text').style('font-size', '13px');
     const line = d3.line().x((d, i) => x(years[i])).y(d => y(d)).curve(d3.curveMonotoneX);
-    const pT = g.append('path').datum(trip).attr('d', line).attr('fill', 'none').attr('stroke', C.driver).attr('stroke-width', 5).attr('stroke-linecap', 'round');
-    const pS = g.append('path').datum(stand).attr('d', line).attr('fill', 'none').attr('stroke', C.standby).attr('stroke-width', 5).attr('stroke-linecap', 'round');
+    const pT = g.append('path').datum(trip).attr('d', line).attr('fill', 'none').attr('stroke', C.driver).attr('stroke-width', 5).attr('stroke-linecap', 'butt');
+    const pS = g.append('path').datum(stand).attr('d', line).attr('fill', 'none').attr('stroke', C.standby).attr('stroke-width', 5).attr('stroke-linecap', 'butt');
     g.append('text').attr('x', 566).attr('y', y(2) + 22).attr('class', 'lbl').style('fill', C.driver).style('font-weight', 700).attr('text-anchor', 'end').text('On a trip');
     const lS = g.append('text').attr('x', 566).attr('y', y(2.6) - 14).attr('class', 'lbl').style('fill', C.ink).style('font-weight', 700).attr('text-anchor', 'end').text('Waiting (unpaid)');
-    // hourglass
-    const hg = g.append('g').attr('transform', 'translate(200,150)');
-    hg.append('path').attr('d', 'M-18,-26 H18 L2,0 L18,26 H-18 L-2,0Z').attr('fill', 'none').attr('stroke', C.ink).attr('stroke-width', 3);
-    const sand = hg.append('path').attr('d', 'M-12,22 H12 L0,8Z').attr('fill', C.standby);
     function draw(p, delay) {
       const L = p.node().getTotalLength();
       p.attr('stroke-dasharray', L).attr('stroke-dashoffset', L).transition().delay(D(delay)).duration(D(1600)).ease(d3.easeCubicInOut).attr('stroke-dashoffset', 0);
@@ -245,8 +320,6 @@
     s.enter = () => {
       draw(pT, 0); draw(pS, 500);
       lS.attr('opacity', 0).transition().delay(D(1900)).duration(D(400)).attr('opacity', 1);
-      if (!reduce) hg.transition().duration(900).attr('transform', 'translate(200,150) rotate(180)').transition().duration(900).attr('transform', 'translate(200,150) rotate(360)');
-      sand.attr('opacity', 0.3).transition().duration(D(1800)).attr('opacity', 1);
     };
   }
 
@@ -262,7 +335,7 @@
     g.append('text').attr('x', 320).attr('y', 530).attr('text-anchor', 'middle').attr('class', 'lbl-s').text('dynamic pricing');
     [x0, x1].forEach(xx => g.append('line').attr('x1', xx).attr('x2', xx).attr('y1', 110).attr('y2', 480).attr('stroke', C.line));
     const rows = g.selectAll('.r').data(data).join('g');
-    rows.append('line').attr('stroke', d => d.c).attr('stroke-width', d => (d.c === C.driver ? 6 : 3)).attr('opacity', d => (d.c === C.driver ? 1 : 0.5)).attr('stroke-linecap', 'round');
+    rows.append('line').attr('stroke', d => d.c).attr('stroke-width', d => (d.c === C.driver ? 6 : 3)).attr('opacity', d => (d.c === C.driver ? 1 : 0.5)).attr('stroke-linecap', 'butt');
     rows.append('circle').attr('class', 'a').attr('r', 9).attr('cx', x0).attr('cy', d => y(d.a)).attr('fill', d => d.c);
     rows.append('circle').attr('class', 'b').attr('r', 9).attr('cx', x0).attr('fill', d => d.c);
     rows.append('text').attr('x', x0 - 18).attr('y', d => y(d.a) + 6).attr('text-anchor', 'end').attr('class', 'num').style('font-size', '20px').text(d => money(d.a));
@@ -283,7 +356,7 @@
     const N = 114, cols = 12, cell = 30;
     const ox = (W - cols * cell) / 2 + cell / 2, oy = 130;
     const order = d3.shuffle(d3.range(N), rng);
-    const dots = g.selectAll('circle').data(d3.range(N)).join('circle').attr('r', 11).attr('fill', C.muted);
+    const dots = g.selectAll('rect.cell').data(d3.range(N)).join('rect').attr('class', 'cell').attr('width', 20).attr('height', 20).attr('transform', 'translate(-10,-10)').attr('fill', C.muted);
     const lWorse = g.append('text').attr('class', 'num').style('fill', C.uber).style('font-size', '30px').attr('opacity', 0).text('93 worse off');
     const lBetter = g.append('text').attr('class', 'num').style('fill', C.driver).style('font-size', '30px').attr('opacity', 0).text('21 better off');
     const pos = (k, c = cols, x0 = ox, y0 = oy) => [x0 + (k % c) * cell, y0 + Math.floor(k / c) * cell];
@@ -291,15 +364,15 @@
       if (mode === 'all') {
         ttl.text('// 114 drivers, a year either side');
         dots.transition().delay(d => D(order[d] * 10)).duration(D(500)).attr('fill', C.muted)
-          .attr('cx', d => pos(order[d])[0]).attr('cy', d => pos(order[d])[1]);
+          .attr('x', d => pos(order[d])[0]).attr('y', d => pos(order[d])[1]);
         lWorse.attr('opacity', 0); lBetter.attr('opacity', 0);
       } else {
         ttl.text('// Who gained, who lost');
         // worse-off block on the left (10 cols), better-off on the right (3 cols)
         dots.transition().delay(d => D(d * 8)).duration(D(800)).ease(d3.easeCubicInOut)
           .attr('fill', d => (d < 93 ? C.uber : C.driver))
-          .attr('cx', d => (d < 93 ? pos(d, 10, 60)[0] : pos(d - 93, 3, 460)[0]))
-          .attr('cy', d => (d < 93 ? pos(d, 10, 60, 150)[1] : pos(d - 93, 3, 460, 150)[1]));
+          .attr('x', d => (d < 93 ? pos(d, 10, 60)[0] : pos(d - 93, 3, 460)[0]))
+          .attr('y', d => (d < 93 ? pos(d, 10, 60, 150)[1] : pos(d - 93, 3, 460, 150)[1]));
         lWorse.attr('x', 60).attr('y', 125).transition().delay(D(1000)).duration(D(400)).attr('opacity', 1);
         lBetter.attr('x', 448).attr('y', 125).transition().delay(D(1100)).duration(D(400)).attr('opacity', 1);
       }
@@ -328,7 +401,7 @@
         warn.attr('opacity', 0);
       } else {
         ttl.text('// Predicting 2023 from 2022');
-        dots.transition().delay(() => D(rng() * 400)).duration(D(1100)).ease(d3.easeElasticOut.amplitude(1).period(0.5)).attr('cy', d => y(d.bad)).attr('fill', C.uber);
+        dots.transition().delay(() => D(rng() * 400)).duration(D(1100)).ease(d3.easeCubicInOut).attr('cy', d => y(d.bad)).attr('fill', C.uber);
         score.text('R² = −54').style('fill', C.uber);
         warn.transition().delay(D(700)).duration(D(300)).attr('opacity', 1);
       }
@@ -355,5 +428,5 @@
       show(element.dataset.scene, element.dataset.mode);
     });
   window.addEventListener('resize', () => scroller.resize());
-  show('day', 'all');
+  show('asym', 'subject');
 })();
