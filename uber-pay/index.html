@@ -46,8 +46,9 @@
 
   /* Scrolly */
   .scrolly{position:relative;display:flex;gap:3rem;max-width:1240px;margin:0 auto;padding:0 24px}
-  .graphic{position:sticky;top:0;height:100vh;flex:1 1 58%;display:flex;align-items:center;justify-content:center}
-  .graphic svg{width:100%;max-height:86vh;background:var(--oxblue);border:1px solid var(--wash);color:rgba(185,214,242,.7);
+  .graphic{position:sticky;top:0;height:100vh;flex:1 1 58%;display:flex;flex-direction:column;align-items:stretch;justify-content:center;margin:0}
+  #vizTitle{font-family:var(--mono);font-size:10pt;color:#fff;margin:0 0 10px;min-height:1.4em;letter-spacing:.02em}
+  .graphic svg{width:100%;max-height:82vh;background:var(--oxblue);border:1px solid var(--wash);color:rgba(185,214,242,.7);
     background-image:linear-gradient(rgba(25,54,88,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(25,54,88,.55) 1px,transparent 1px);background-size:32px 32px}
   .steps{flex:1 1 42%;position:relative;z-index:2}
   .step{min-height:90vh;display:flex;align-items:center;counter-increment:step}
@@ -123,6 +124,7 @@
 <main>
 <section class="scrolly" aria-label="Scrolling story">
   <figure class="graphic" aria-hidden="true">
+    <figcaption id="vizTitle"></figcaption>
     <svg id="viz" viewBox="0 0 640 560" role="img"></svg>
   </figure>
 
@@ -292,6 +294,6 @@
 
 <script src="../lib/d3.min.js"></script>
 <script src="../lib/scrollama.min.js"></script>
-<script src="story.js?v=1795199302"></script>
+<script src="story.js?v=1795199535"></script>
 </body>
 </html>

@@ -12,8 +12,22 @@
   const normal = d3.randomNormal.source(rng);
 
   const scenes = {};
-  const make = id => (scenes[id] = { g: svg.append('g').attr('class', 'scene').attr('id', 's-' + id) });
-  const title = (g, t) => g.append('text').attr('x', 40).attr('y', 56).attr('class', 'lbl').style('font-family', "'IBM Plex Mono', monospace").style('font-size', '13px').style('letter-spacing', '0.12em').style('text-transform', 'uppercase').style('fill', 'rgba(255,255,255,.6)').text('// ' + t);
+  let current = null;
+  const make = id => (lastMade = scenes[id] = { id, g: svg.append('g').attr('class', 'scene').attr('id', 's-' + id) });
+  // Panel titles live in an HTML caption above the graphic (Title Case, no prefix)
+  const small = new Set(['a','an','the','of','on','in','per','vs','from','to','and','or','at','by','for']);
+  const up = w => w.replace(/^([(\[]?)(\p{L})/u, (m, p, c) => p + c.toUpperCase());
+  const titleCase = t => { const ws = t.replace(/^\/\/\s*/, '').split(' '); return ws.map((w, i) => {
+    const force = i === 0 || i === ws.length - 1 || /[:]$/.test(ws[i - 1] || '');
+    if (!force && small.has(w.toLowerCase())) return w.toLowerCase();
+    return w.split('-').map(up).join('-'); }).join(' '); };
+  const cap = document.getElementById('vizTitle');
+  let lastMade = null;
+  const title = (g, t) => {
+    const sc = lastMade;
+    const o = { attr: () => o, text: v => { sc.title = titleCase(v); if (current === sc.id) cap.textContent = sc.title; return o; } };
+    return o.text(t);
+  };
 
   function countUp(sel, to, f, ms = 1400, from = 0) {
     sel.transition().duration(D(ms)).ease(d3.easeCubicOut)
@@ -487,7 +501,6 @@
   }
 
   /* ---------- Scroll wiring ---------- */
-  let current = null;
   function show(id, mode) {
     if (current && current !== id) {
       scenes[current].g.classed('on', false);
@@ -496,6 +509,7 @@
     scenes[id].g.classed('on', true);
     current = id;
     scenes[id].enter && scenes[id].enter(mode);
+    cap.textContent = scenes[id].title || '';
   }
 
   const steps = d3.selectAll('.step');
