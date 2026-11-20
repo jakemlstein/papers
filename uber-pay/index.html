@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not Even Nice Work If You Can Get It · An interactive explainer</title>
+<meta name="description" content="An accessible, scroll-driven explainer of a FAccT 2025 study of Uber's algorithmic pay, based on 1.5 million trips from 258 UK drivers.">
+<meta property="og:title" content="What happened to Uber drivers' pay after the algorithm took over?">
+<meta property="og:description" content="1.5 million trips. 258 drivers. One algorithm. An interactive explainer of our FAccT 2025 paper.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f3ec; --ink:#1d1b18; --muted:#6b645a; --card:#fffdf8;
+    --driver:#14866d; --uber:#e2522f; --standby:#f0b429; --enroute:#7fb7a8;
+    --line:#d9d1c4;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 Inter,system-ui,sans-serif}
+  a{color:var(--driver)}
+  .skip{position:absolute;left:-999px;top:0;background:#000;color:#fff;padding:8px 12px;z-index:99}
+  .skip:focus{left:8px}
+
+  /* Hero */
+  .hero{min-height:100vh;display:grid;place-items:center;text-align:center;padding:40px 20px;position:relative;overflow:hidden}
+  .hero .kicker{font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;color:var(--uber)}
+  .hero h1{font-family:Fraunces,serif;font-weight:800;font-size:clamp(36px,7vw,84px);line-height:1.02;margin:.25em 0 .3em;max-width:14ch}
+  .hero p.sub{font-size:clamp(18px,2.2vw,23px);max-width:34ch;margin:0 auto;color:var(--muted)}
+  .hero .meta{margin-top:28px;font-size:14px;color:var(--muted)}
+  .road{position:absolute;left:0;right:0;bottom:60px;height:4px;background:repeating-linear-gradient(90deg,var(--ink) 0 30px,transparent 30px 60px);opacity:.25}
+  .car{position:absolute;bottom:64px;left:-120px;width:90px;animation:drive 9s linear infinite}
+  @keyframes drive{to{transform:translateX(calc(100vw + 240px))}}
+  .scrollcue{margin-top:36px;font-size:14px;color:var(--muted);animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(6px)}}
+
+  /* Scrolly */
+  .scrolly{position:relative;display:flex;gap:2rem;max-width:1200px;margin:0 auto;padding:0 20px}
+  .graphic{position:sticky;top:0;height:100vh;flex:1 1 58%;display:flex;align-items:center;justify-content:center}
+  .graphic svg{width:100%;max-height:88vh;background:var(--card);border-radius:20px;box-shadow:0 10px 40px rgba(60,40,10,.08)}
+  .steps{flex:1 1 42%;position:relative;z-index:2}
+  .step{min-height:85vh;display:flex;align-items:center}
+  .step .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:0 4px 18px rgba(60,40,10,.06);opacity:.35;transition:opacity .4s}
+  .step.is-active .card{opacity:1}
+  .step:last-child{min-height:100vh}
+  .card h2{font-family:Fraunces,serif;font-size:26px;line-height:1.15;margin:0 0 .4em}
+  .card p{margin:.5em 0}
+  .big{font-family:Fraunces,serif;font-weight:800;font-size:1.4em}
+  .tag{display:inline-block;padding:0 .4em;border-radius:6px;color:#fff;font-weight:700;font-size:.9em}
+  .t-driver{background:var(--driver)} .t-uber{background:var(--uber)} .t-standby{background:var(--standby);color:#1d1b18} .t-enroute{background:var(--enroute);color:#1d1b18}
+  .note{font-size:13px;color:var(--muted)}
+
+  /* SVG text */
+  svg text{font-family:Inter,system-ui,sans-serif;fill:var(--ink)}
+  .lbl{font-size:15px} .lbl-s{font-size:12px;fill:var(--muted)} .num{font-family:Fraunces,serif;font-weight:800}
+  .scene{opacity:0;pointer-events:none;transition:opacity .6s}
+  .scene.on{opacity:1}
+
+  /* Outro */
+  .outro{max-width:760px;margin:0 auto;padding:80px 20px 120px}
+  .outro h2{font-family:Fraunces,serif;font-size:36px;line-height:1.1}
+  .asks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:24px 0}
+  .ask{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .ask b{display:block;margin-bottom:4px}
+  .btn{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;margin:6px 8px 6px 0;font-weight:500}
+  .btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+  footer{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px;margin-top:40px}
+
+  @media (max-width:820px){
+    .scrolly{display:block;padding:0 12px}
+    .graphic{height:56vh;top:0;padding-top:8px}
+    .steps{margin-top:-20vh}
+    .step{min-height:90vh;align-items:flex-end;padding-bottom:6vh}
+    .step .card{opacity:.97}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#summary">Skip the animation and read the summary</a>
+
+<header class="hero">
+  <div>
+    <div class="kicker">FAccT 2025 · Interactive explainer</div>
+    <h1>Not even nice work if you can get it</h1>
+    <p class="sub">What happened to Uber drivers' pay when an algorithm started setting it? We asked the drivers for their data and found out.</p>
+    <div class="meta">Reuben Binns, Jake Stein, Siddhartha Datta, Max Van Kleek &amp; Nigel Shadbolt · University of Oxford</div>
+    <div class="scrollcue" aria-hidden="true">Scroll to start ↓</div>
+  </div>
+  <div class="road" aria-hidden="true"></div>
+  <svg class="car" viewBox="0 0 90 40" aria-hidden="true"><path d="M8 26 L14 14 Q17 9 24 9 L56 9 Q62 9 67 14 L76 22 L84 24 Q88 25 88 29 L88 31 L2 31 L2 28 Q2 26 8 26Z" fill="#1d1b18"/><path d="M20 14 L26 12 L44 12 L44 22 L16 22Z M48 12 L58 12 L68 22 L48 22Z" fill="#cfe7e0"/><circle cx="22" cy="31" r="7" fill="#1d1b18" stroke="#f7f3ec" stroke-width="3"/><circle cx="68" cy="31" r="7" fill="#1d1b18" stroke="#f7f3ec" stroke-width="3"/></svg>
+</header>
+
+<main>
+<section class="scrolly" aria-label="Scrolling story">
+  <figure class="graphic" aria-hidden="true">
+    <svg id="viz" viewBox="0 0 640 560" role="img"></svg>
+  </figure>
+
+  <div class="steps">
+    <div class="step" data-scene="day" data-mode="all">
+      <div class="card">
+        <h2>A driver's day has three parts</h2>
+        <p>When a driver logs in to the app, their time splits into three kinds:</p>
+        <p><span class="tag t-driver">On a trip</span> with a passenger, <span class="tag t-enroute">En route</span> to pick someone up, and <span class="tag t-standby">Waiting</span> for the app to offer a job.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="day" data-mode="uber">
+      <div class="card">
+        <h2>Uber only counts some of it</h2>
+        <p>Uber pays for time on trips and driving to pickups. The waiting time? Unpaid, and invisible in Uber's version of "hourly pay".</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="day" data-mode="court">
+      <div class="card">
+        <h2>The courts count all of it</h2>
+        <p>In 2021 the UK Supreme Court ruled that Uber drivers are workers, not independent contractors. The Employment Tribunal said working time includes every minute a driver is logged in and ready to work.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="pay">
+      <div class="card">
+        <h2>Same work. Two very different wages.</h2>
+        <p>Averaged over 2020 to 2024, drivers earned about <span class="big">£29.46</span> an hour by Uber's definition.</p>
+        <p>Count waiting time, as the Tribunal does, and it falls to <span class="big">£15.98</span>. That's before fuel, insurance or car costs.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="data">
+      <div class="card">
+        <h2>How we know: drivers asked for their own data</h2>
+        <p>Under GDPR, anyone can ask a company for a copy of the data it holds about them. With the non-profit Worker Info Exchange, <b>258 drivers</b> did exactly that and shared it with us.</p>
+        <p>The result: <b>1.5 million trips</b> from 2016 to 2024, analysed on a secure laptop so no driver could be identified.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="split" data-mode="before">
+      <div class="card">
+        <h2>Then the algorithm changed</h2>
+        <p>Before 2023, the split was simple: of every fare, drivers got <span class="tag t-driver">75%</span> and Uber kept <span class="tag t-uber">25%</span>.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="split" data-mode="after">
+      <div class="card">
+        <h2>"Dynamic pricing" broke the fixed split</h2>
+        <p>From early 2023, an algorithm set the passenger's price and the driver's pay separately, trip by trip. Uber's cut now varies every time.</p>
+        <p>The typical (median) cut rose to <span class="tag t-uber">29%</span>. Only <b>46%</b> of drivers still got 75% or more on average.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="split" data-mode="bigfare">
+      <div class="card">
+        <h2>The bigger the fare, the bigger Uber's slice</h2>
+        <p>Uber's cut was largest on the most valuable trips. So the jobs drivers most hope for are exactly where Uber takes the most.</p>
+        <p class="note">Bars are illustrative, showing the pattern found in the paper.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="surplus">
+      <div class="card">
+        <h2>Uber's margin grew by 38%</h2>
+        <p>For every hour a driver spent on a trip, what Uber kept after paying the driver rose from <span class="big">£8.47</span> to <span class="big">£11.70</span>.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="wait">
+      <div class="card">
+        <h2>Meanwhile, more waiting</h2>
+        <p>Time spent on trips stayed flat at around two hours a day. But unpaid waiting kept climbing, and since 2023 drivers usually spend <b>more time waiting than driving passengers</b>.</p>
+        <p class="note">Approximate daily averages redrawn from Figure 2 of the paper.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="real">
+      <div class="card">
+        <h2>Real pay went down</h2>
+        <p>After adjusting for inflation, comparing the year before dynamic pricing with the year after, Tribunal-definition pay fell from <span class="big">£22.20</span> to <span class="big">£19.06</span> an hour.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="waffle" data-mode="all">
+      <div class="card">
+        <h2>Not everyone lost equally</h2>
+        <p>We followed 114 drivers who worked a full year either side of the change. Each dot is one of them.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="waffle" data-mode="split">
+      <div class="card">
+        <h2>Most were worse off</h2>
+        <p><span class="tag t-uber">93 drivers</span> earned less per hour. <span class="tag t-driver">21</span> earned more. The gap between drivers grew, and hours or experience didn't explain who won or lost.</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="predict" data-mode="before">
+      <div class="card">
+        <h2>Pay used to be predictable</h2>
+        <p>Before 2023, a simple model could predict a trip's pay quite well from distance, duration and time of day. Drivers could plan.</p>
+        <p class="note">Each dot: predicted vs actual pay (illustrative).</p>
+      </div>
+    </div>
+
+    <div class="step" data-scene="predict" data-mode="after">
+      <div class="card">
+        <h2>Then the old rules stopped working</h2>
+        <p>Trained on 2022 trips, the model failed completely on 2023: it did far worse than just guessing the average. Whatever drivers had learned about their pay no longer held.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="outro" id="summary">
+  <h2>In short</h2>
+  <p>After Uber introduced algorithmic "dynamic pricing" in 2023, the drivers in our study saw <b>lower real pay</b>, a <b>bigger cut for Uber</b>, <b>more unpaid waiting</b>, <b>less predictable work</b>, and <b>more inequality</b> between drivers. We can't prove the algorithm caused every change, since demand, traffic and the driver pool changed too, but the pattern is consistent.</p>
+  <p>It's also proof that workers can audit the algorithms that manage them, using data protection rights they already have.</p>
+
+  <h3>What would help</h3>
+  <div class="asks">
+    <div class="ask"><b>Trip-level transparency</b>Show drivers the fare and Uber's cut for every trip, not just weekly averages.</div>
+    <div class="ask"><b>Know before you accept</b>Share fare, distance and destination up front, as Colorado now requires.</div>
+    <div class="ask"><b>Open trip data</b>Publish anonymised trip records, as New York and Chicago do.</div>
+    <div class="ask"><b>Pay for waiting</b>Recognise logged-in time as working time, and reduce idle hours.</div>
+  </div>
+
+  <a class="btn" href="https://dl.acm.org/doi/10.1145/3715275.3732099">Read the paper (ACM)</a>
+  <a class="btn alt" href="https://arxiv.org/abs/2506.15278">Free version (arXiv)</a>
+  <a class="btn alt" href="https://www.workerinfoexchange.org/">Worker Info Exchange</a>
+
+  <footer>
+    Binns, R., Stein, J., Datta, S., Van Kleek, M., &amp; Shadbolt, N. (2025). Not Even Nice Work If You Can Get It; A Longitudinal Study of Uber's Algorithmic Pay and Pricing. <i>FAccT '25</i>, Athens. doi:10.1145/3715275.3732099<br>
+    Thanks to Worker Info Exchange, the App Drivers and Couriers Union, and every driver who shared their data. Figures marked illustrative show patterns, not exact values. <a href="../">More papers</a>
+  </footer>
+</section>
+</main>
+
+<script src="../lib/d3.min.js"></script>
+<script src="../lib/scrollama.min.js"></script>
+<script src="story.js"></script>
+</body>
+</html>
