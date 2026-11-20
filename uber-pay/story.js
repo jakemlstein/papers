@@ -193,26 +193,44 @@
   {
     const s = make('data'), g = s.g;
     title(g, 'Where the data came from');
-    const nodes = [ { k: 'Uber', sub: 'holds the data', x: 100, c: C.ink }, { k: 'Worker Info', sub: 'Exchange', x: 320, c: C.standby }, { k: 'Oxford', sub: 'researchers', x: 540, c: C.driver } ];
-    const ny = 300;
+    const ny = 290, R = 40;
+    const nodes = [ { k: 'Uber', sub: 'holds the data', x: 66, c: C.ink }, { k: 'Worker Info', sub: 'Exchange', x: 440, c: C.standby }, { k: 'Oxford', sub: 'researchers', x: 574, c: C.driver } ];
     nodes.forEach(n => {
-      g.append('circle').attr('cx', n.x).attr('cy', ny).attr('r', 54).attr('fill', C.bg).attr('stroke', n.c).attr('stroke-width', 4);
-      g.append('text').attr('x', n.x).attr('y', ny + 82).attr('text-anchor', 'middle').attr('class', 'lbl').style('font-weight', 700).text(n.k);
-      g.append('text').attr('x', n.x).attr('y', ny + 100).attr('text-anchor', 'middle').attr('class', 'lbl-s').text(n.sub);
+      g.append('circle').attr('cx', n.x).attr('cy', ny).attr('r', R).attr('fill', C.bg).attr('stroke', n.c).attr('stroke-width', 3);
+      g.append('text').attr('x', n.x).attr('y', ny + 82).attr('text-anchor', 'middle').attr('class', 'lbl').style('font-weight', 700).style('font-size', '14px').text(n.k);
+      g.append('text').attr('x', n.x).attr('y', ny + 99).attr('text-anchor', 'middle').attr('class', 'lbl-s').style('font-size', '11px').text(n.sub);
     });
-    g.append('text').attr('x', 210).attr('y', 230).attr('text-anchor', 'middle').attr('class', 'lbl-s').text('GDPR data requests');
-    g.append('text').attr('x', 430).attr('y', 230).attr('text-anchor', 'middle').attr('class', 'lbl-s').text('anonymised, on-site');
+    // 258 individual drivers
+    const cols = 18, step = 9, gx0 = 150, gy0 = ny - 7 * step;
+    const cells = d3.range(258).map(i => ({ i, x: gx0 + (i % cols) * step, y: gy0 + Math.floor(i / cols) * step }));
+    const grid = g.append('g');
+    const cellSel = grid.selectAll('rect').data(cells).join('rect').attr('x', d => d.x - 3).attr('y', d => d.y - 3).attr('width', 6).attr('height', 6)
+      .attr('fill', 'none').attr('stroke', 'rgba(185,214,242,.35)');
+    const gxm = gx0 + (cols - 1) * step / 2;
+    g.append('text').attr('x', gxm).attr('y', ny + 82).attr('text-anchor', 'middle').attr('class', 'lbl').style('font-weight', 700).style('font-size', '14px').text('258 drivers');
+    g.append('text').attr('x', gxm).attr('y', ny + 99).attr('text-anchor', 'middle').attr('class', 'lbl-s').style('font-size', '11px').text('one request each');
+    const s1 = g.append('text').attr('x', gxm).attr('y', 196).attr('text-anchor', 'middle').attr('class', 'lbl-s').style('font-size', '11px').text('① each driver requests their data (GDPR)');
+    const s2 = g.append('text').attr('x', 470).attr('y', 196).attr('text-anchor', 'middle').attr('class', 'lbl-s').style('font-size', '11px').text('② drivers pool it');
+    const s3 = g.append('text').attr('x', 507).attr('y', 214).attr('text-anchor', 'middle').attr('class', 'lbl-s').style('font-size', '11px').text('③ anonymised, on-site');
     const dots = g.append('g');
-    const trips = g.append('text').attr('x', 320).attr('y', 450).attr('text-anchor', 'middle').attr('class', 'num').style('font-size', '44px').text('0');
-    g.append('text').attr('x', 320).attr('y', 480).attr('text-anchor', 'middle').attr('class', 'lbl').text('trips analysed · from 258 drivers · 2016–2024');
+    const trips = g.append('text').attr('x', 320).attr('y', 462).attr('text-anchor', 'middle').attr('class', 'num').style('font-size', '40px').text('0');
+    g.append('text').attr('x', 320).attr('y', 490).attr('text-anchor', 'middle').attr('class', 'lbl').text('trips analysed · from 258 drivers · 2016–2024');
     s.enter = () => {
       dots.selectAll('*').remove();
-      const pts = d3.range(258).map(i => ({ i, dy: normal(0, 22)(), d2: normal(0, 22)() }));
-      dots.selectAll('circle').data(pts).join('circle').attr('r', 3.2).attr('fill', C.driver).attr('opacity', 0.8)
-        .attr('cx', 100).attr('cy', d => ny + d.dy)
-        .transition().delay(d => D(d.i * 8)).duration(D(900)).attr('cx', 320).attr('cy', d => ny + d.d2)
-        .transition().duration(D(900)).attr('cx', d => 540 + normal(0, 14)()).attr('cy', d => ny + normal(0, 18)());
-      countUp(trips, 1500000, v => fmt(v) + (v > 1499000 ? '+' : ''), 3200);
+      cellSel.interrupt().attr('fill', 'none').attr('stroke', 'rgba(185,214,242,.35)');
+      [s1, s2, s3].forEach((t, k) => t.attr('opacity', 0).transition().delay(D([0, 2600, 4200][k])).duration(D(400)).attr('opacity', 1));
+      const T1 = 900, T2 = 2600;
+      // 1) Uber -> each driver
+      dots.selectAll('circle').data(cells).join('circle').attr('r', 2.6).attr('fill', '#fff').attr('opacity', 0.9)
+        .attr('cx', 66 + R).attr('cy', ny)
+        .transition().delay(d => D(d.i * 6)).duration(D(T1)).ease(d3.easeCubicInOut).attr('cx', d => d.x).attr('cy', d => d.y)
+        .on('end', function (d) { cellSel.filter(c => c.i === d.i).attr('fill', C.driver).attr('stroke', C.driver); d3.select(this).attr('opacity', 0); })
+        // 2) driver -> WIE (pooled)
+        .transition().delay(d => D(T2 - d.i * 6 - T1 + (d.i % 40) * 12)).duration(D(1000)).ease(d3.easeCubicInOut)
+        .attr('opacity', 0.9).attr('fill', C.standby).attr('cx', () => 440 + normal(0, 12)()).attr('cy', () => ny + normal(0, 12)())
+        // 3) WIE -> Oxford
+        .transition().delay(D(900)).duration(D(800)).attr('fill', C.driver).attr('cx', () => 574 + normal(0, 10)()).attr('cy', () => ny + normal(0, 10)());
+      countUp(trips, 1500000, v => fmt(v) + (v >= 1499999.5 ? '+' : ''), 5400);
     };
   }
 
