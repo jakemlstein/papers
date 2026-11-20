@@ -195,6 +195,77 @@
     };
   }
 
+
+  /* ---------- Scene: integrating DSAR responses ---------- */
+  {
+    const s = make('dsar'), g = s.g;
+    const ttl = title(g, 'One DSAR response');
+    const names = ['Rider_Feedback_Given_By_Driver','Driver_and_Rider_Device_Data','Driver_Profile_Data','Eater_Saved_Locations','Driver_Trip_Status','Rider_Lifetime_Ratings_Received',
+      'Driver_Online_Offline','Driver_Feedback_Received','Driver_App_Restrictions','Driver_Lifetime_Ratings_Received','Rider_Lifetime_Ratings_Given_To_Drivers','Rider_Profile_Data',
+      'Communications_From_Users','Driver_Trusted_Contacts','Driver_Profile_Information','Rider_Detailed_Device_Data','Rider_Lifetime_Trips','Communications_To_Users',
+      'Driver_Saved_Locations','Driver_Payments','Miscellaneous_Payments','Driver_Lifetime_Trips','Driver_Dispatches_Offered_and_Accepted','Driver_Detailed_Device_Data',
+      'Payment_Methods','Driver_Performance_Badges','Driver_Star_Power_Requests','Driver_Cancellations_From_Riders','Driver_Lifetime_Ratings_Given_To_Clients','+ more files'];
+    const KEY = new Set(['Driver_Payments','Miscellaneous_Payments','Driver_Lifetime_Trips','Driver_Dispatches_Offered_and_Accepted']);
+    const cols = 6, tw = 90, th = 40, gx = 6, gy = 6, x0 = 33, y0 = 104;
+    const tiles = names.map((n, i) => ({ n, i, key: KEY.has(n), x: x0 + (i % cols) * (tw + gx), y: y0 + Math.floor(i / cols) * (th + gy) }));
+    // folder icon
+    const fold = g.append('g').attr('transform', 'translate(560,30)');
+    fold.append('path').attr('d', 'M0,8 H18 L24,14 H52 V44 H0 Z').attr('fill', 'none').attr('stroke', '#fff').attr('stroke-width', 2.5);
+    fold.append('text').attr('x', 26).attr('y', 36).attr('text-anchor', 'middle').attr('class', 'num').style('font-size', '10px').text('.csv');
+    const tg = g.append('g');
+    const tile = tg.selectAll('g').data(tiles).join('g').attr('transform', 'translate(586,52)').attr('opacity', 0);
+    tile.append('rect').attr('width', tw).attr('height', th).attr('fill', '#0b2a52').attr('stroke', 'rgba(255,255,255,.35)');
+    tile.each(function (d) {
+      const parts = d.n.replace(/_/g, '_​').split('​'); const lines = []; let cur = '';
+      parts.forEach(pt => { if ((cur + pt).length > 15 && cur) { lines.push(cur); cur = pt; } else cur += pt; }); lines.push(cur);
+      const t = d3.select(this).append('text').attr('x', tw / 2).attr('text-anchor', 'middle').style('font-family', "'IBM Plex Mono', monospace").style('font-size', '7.5px').style('fill', 'rgba(255,255,255,.8)');
+      lines.slice(0, 3).forEach((l, k) => t.append('tspan').attr('x', tw / 2).attr('y', th / 2 + 3 + (k - (Math.min(lines.length, 3) - 1) / 2) * 9).text(l));
+    });
+    // pipeline
+    const pipe = g.append('g').attr('opacity', 0);
+    const node = (x, y, w, label, hot) => {
+      const n = pipe.append('g').attr('transform', `translate(${x},${y})`);
+      n.append('rect').attr('x', -w / 2).attr('y', -18).attr('width', w).attr('height', 36).attr('fill', hot ? C.driver : '#0b2a52').attr('stroke', hot ? C.driver : '#fff');
+      n.append('text').attr('y', 4).attr('text-anchor', 'middle').style('font-family', "'IBM Plex Mono', monospace").style('font-size', '10.5px').style('fill', hot ? C.bg : '#fff').style('font-weight', hot ? 700 : 400).text(label);
+      return n;
+    };
+    const tc = n => { const t = tiles.find(d => d.n === n); return [t.x + tw / 2, t.y + th]; };
+    const N = { pay: [96, 418], wpay: [232, 418], wtrip: [372, 418], wdisp: [512, 418], cmp: [320, 506] };
+    const links = [
+      [tc('Driver_Payments'), N.pay], [tc('Miscellaneous_Payments'), N.pay], [N.pay, N.wpay],
+      [tc('Driver_Lifetime_Trips'), N.wtrip], [tc('Driver_Dispatches_Offered_and_Accepted'), N.wdisp],
+      [N.wpay, N.cmp], [N.wtrip, N.cmp], [N.wdisp, N.cmp]
+    ];
+    const linkPaths = pipe.selectAll('path').data(links).join('path').attr('fill', 'none').attr('stroke', C.driver).attr('stroke-width', 2)
+      .attr('d', ([a, b]) => a[1] === b[1] ? `M${a[0] + 56},${a[1]} H${b[0] - 56}` : `M${a[0]},${a[1] + (a[1] > 400 ? 18 : 0)} C${a[0]},${(a[1] + b[1]) / 2} ${b[0]},${(a[1] + b[1]) / 2} ${b[0]},${b[1] - 18}`);
+    node(...N.pay, 112, 'Payments'); node(...N.wpay, 112, 'Weekly payments'); node(...N.wtrip, 112, 'Weekly trips'); node(...N.wdisp, 128, 'Weekly dispatches');
+    node(...N.cmp, 150, 'PAY COMPARISON', true);
+    pipe.append('text').attr('x', 148).attr('y', 384).attr('class', 'lbl-s').style('font-size', '10px').text('normalise timestamps');
+    pipe.append('text').attr('x', 420).attr('y', 470).attr('class', 'lbl-s').style('font-size', '10px').text('fuzzy-match on time');
+    const count = g.append('text').attr('x', 33).attr('y', 404).attr('class', 'num').style('font-size', '15px').style('letter-spacing', '0.08em');
+    s.enter = mode => {
+      if (mode === 'files') {
+        ttl.text('// One DSAR response');
+        pipe.transition().duration(D(300)).attr('opacity', 0);
+        tile.transition().delay(d => D(d.i * 35)).duration(D(600)).ease(d3.easeCubicOut)
+          .attr('transform', d => `translate(${d.x},${d.y})`).attr('opacity', 1);
+        tile.select('rect').transition().duration(D(300)).attr('stroke', 'rgba(255,255,255,.35)').attr('stroke-width', 1);
+        count.attr('opacity', 0).text('~40–45 FILES · ~35 CSVs · PER DRIVER').style('fill', C.standby)
+          .transition().delay(D(1200)).duration(D(400)).attr('opacity', 1);
+      } else {
+        ttl.text('// Rebuilding the picture');
+        tile.attr('transform', d => `translate(${d.x},${d.y})`).transition().duration(D(600)).attr('opacity', d => (d.key ? 1 : 0.18));
+        tile.select('rect').transition().duration(D(600)).attr('stroke', d => (d.key ? C.driver : 'rgba(255,255,255,.35)')).attr('stroke-width', d => (d.key ? 2.5 : 1));
+        count.transition().duration(D(300)).attr('opacity', 0);
+        pipe.transition().delay(D(400)).duration(D(400)).attr('opacity', 1);
+        linkPaths.each(function (d, i) {
+          const L = this.getTotalLength();
+          d3.select(this).attr('stroke-dasharray', L).attr('stroke-dashoffset', L).transition().delay(D(500 + i * 180)).duration(D(600)).attr('stroke-dashoffset', 0);
+        });
+      }
+    };
+  }
+
   /* ---------- Scene: fare split ---------- */
   {
     const s = make('split'), g = s.g;

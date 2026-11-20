@@ -54,7 +54,7 @@
   .step .txt{opacity:.22;transition:opacity .4s;max-width:30em}
   .step.is-active .txt{opacity:1}
   .step:last-child{min-height:100vh}
-  .txt::before{content:counter(step,decimal-leading-zero) " / 18";display:block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--uber);margin-bottom:10px}
+  .txt::before{content:counter(step,decimal-leading-zero) " / 20";display:block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--uber);margin-bottom:10px}
   .txt h2{font-weight:800;font-style:italic;text-transform:uppercase;font-size:28px;line-height:1.08;margin:0 0 .5em;letter-spacing:-.005em}
   .txt p{margin:.55em 0}
   .big{font-weight:800;font-size:1.3em;font-family:var(--mono);letter-spacing:-.02em}
@@ -64,6 +64,10 @@
   blockquote{margin:22px 0 0;padding:0 0 0 16px;border-left:2px solid var(--wash);color:var(--dim);font-style:italic;font-size:15px;line-height:1.55}
   blockquote cite{display:block;margin-top:8px;font-style:normal;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
   blockquote .who{color:var(--standby)}
+  .log{list-style:none;padding:0;margin:14px 0 0;font-family:var(--mono);font-size:12px;line-height:1.5;border-top:1px solid var(--wash)}
+  .log li{padding:6px 0;border-bottom:1px solid var(--wash);color:var(--dim)}
+  .log b{display:inline-block;width:5.5em;color:var(--uber);font-weight:500}
+  .log i{font-style:normal;color:var(--driver)}
   .ref{margin-top:22px!important;padding-left:16px;border-left:2px solid var(--wash);font-family:var(--mono);font-size:11px;line-height:1.6;letter-spacing:.04em;color:var(--faint)}
   .ref::before{content:'REF  ';color:var(--driver)}
 
@@ -172,6 +176,27 @@
       <p>Under GDPR, anyone can ask a company for a copy of the data it holds about them. Working with the non-profit Worker Info Exchange, drivers did exactly that and pooled it for this audit.</p>
       <p>Everything was analysed on a secure laptop at WIE's office so no driver could be identified.</p>
       <blockquote>“258 drivers volunteered their data covering over 1.5 million trips between 2016-2024.”<cite>§1 Introduction · p. 1485</cite></blockquote>
+    </div></div>
+
+    <div class="step" data-scene="dsar" data-mode="files"><div class="txt">
+      <h2>A data request returns a mess, not a dataset</h2>
+      <p>Each driver's response arrived as dozens of loosely documented files: device logs, ratings, saved locations, messages. Only a handful say anything about pay.</p>
+      <blockquote>“When WIE receives data from gig work platforms, it takes the shape of many disorganized files that are not readily understandable without substantial interpretation, preprocessing, and cleaning.”<cite>§3.2 Data Source · p. 1487</cite></blockquote>
+    </div></div>
+
+    <div class="step" data-scene="dsar" data-mode="pipeline"><div class="txt">
+      <h2>So we rebuilt the picture ourselves</h2>
+      <p>Four tables had to be cleaned, matched and stitched together before a single pay figure could be calculated. Problems surfaced at every level:</p>
+      <ul class="log">
+        <li><b>SCHEMA</b> No unique trip IDs <i>→ time-based fuzzy matching</i></li>
+        <li><b>SCHEMA</b> Tables renamed or missing between responses</li>
+        <li><b>TABLE</b> Column names don't match <i>→ regex normalisation</i></li>
+        <li><b>TABLE</b> Different aggregation (dispatches per hour vs. per record)</li>
+        <li><b>CELL</b> Mixed formats in one column (Unix vs. timestamps) <i>→ regex normalisation</i></li>
+        <li><b>CELL</b> Metrics don't line up with their definitions</li>
+        <li><b>CELL</b> Personal details removed, encrypted ID added</li>
+      </ul>
+      <blockquote>“A unique trip identifier is not provided in the data, but by joining multiple tables and inferring which payment related to which trip based on timestamps, we were able calculate the take rate”<cite>§4.3 Commission / Take Rates / Surplus · p. 1489</cite></blockquote>
     </div></div>
 
     <div class="step" data-scene="split" data-mode="before"><div class="txt">
