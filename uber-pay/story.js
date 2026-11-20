@@ -114,7 +114,7 @@
         on(wedge, 0.18, 1400); on(bCtrl1, 0.75, 400); on(bCtrl2, 0.75, 400);
         tag.text('INFORMATION ASYMMETRY').style('fill', C.uber).transition().delay(D(1800)).duration(D(400)).attr('opacity', 1);
       } else {
-        ttl.text('// Pooling the view');
+        ttl.text('// Mutual legibility');
         on(subj, 1); on(bSubj, 0.4); on(wedge, 0.18);
         slide(sh1, C1, S1, 300); slide(sh2, C2, S2, 300);
         dots.transition().duration(D(300)).attr('r', 9); trend.attr('x2', ax(0.95)).attr('y2', ay(0.95));
